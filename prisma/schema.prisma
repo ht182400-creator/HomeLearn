@@ -204,6 +204,7 @@ model Question {
   questionTopics  QuestionTopic[]
   questionTags    QuestionTag[]
   attachments     Attachment[]
+  recordings      Recording[]
   
   @@index([userId])
   @@index([subjectId])

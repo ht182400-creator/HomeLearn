@@ -14,26 +14,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     CredentialsProvider({
       name: 'credentials',
       credentials: {
-        email: { label: '邮箱', type: 'email' },
+        login: { label: '邮箱/用户名', type: 'text' },
         password: { label: '密码', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.login || !credentials?.password) {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+        const loginInput = credentials.login as string;
+        const password = credentials.password as string;
+
+        // 支持邮箱或用户名登录
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: loginInput },
+              { username: loginInput },
+            ],
+          },
         });
 
         if (!user || !user.passwordHash) {
           return null;
         }
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        );
+        const isValid = await bcrypt.compare(password, user.passwordHash);
 
         if (!isValid) {
           return null;
