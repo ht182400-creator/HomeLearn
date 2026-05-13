@@ -19,10 +19,9 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const queryParams = {
       subjectId: searchParams.get("subjectId") || undefined,
-      gradeId: searchParams.get("gradeId") || undefined,
       type: searchParams.get("type") || undefined,
       difficulty: searchParams.get("difficulty") || undefined,
-      childId: searchParams.get("childId") || undefined,
+      grade: searchParams.get("grade") || undefined,
       keyword: searchParams.get("keyword") || undefined,
       page: searchParams.get("page") || "1",
       pageSize: searchParams.get("pageSize") || "20",
@@ -34,9 +33,40 @@ export async function GET(request: NextRequest) {
 
     // 构建查询条件
     const where: any = {
-      creatorId: session.user.id, // 只显示当前用户创建的题目
-      ...filters,
+      userId: session.user.id, // 只显示当前用户创建的题目
     };
+
+    // 学科筛选（支持 subjectId 按 ID 查询 或 subject 按 code 查询）
+    if (filters.subjectId) {
+      where.subjectId = filters.subjectId;
+    } else if (searchParams.get('subject')) {
+      // 支持通过学科 code 筛选（从 Dashboard 首页跳转时使用）
+      const subjectCode = searchParams.get('subject');
+      const subjectByCode = await prisma.subject.findUnique({
+        where: { code: subjectCode },
+        select: { id: true },
+      });
+      if (subjectByCode) {
+        where.subjectId = subjectByCode.id;
+      }
+    }
+
+    // 类型筛选
+    if (filters.type) {
+      where.type = filters.type;
+    }
+
+    // 难度筛选
+    if (filters.difficulty) {
+      where.difficulty = filters.difficulty;
+    }
+
+    // 年级筛选 - Prisma 枚举类型需要显式匹配
+    if (filters.grade) {
+      where.grade = filters.grade;
+    }
+
+    console.log("[Questions API] 查询条件:", JSON.stringify(where, null, 2));
 
     // 关键词搜索
     if (keyword) {
@@ -54,13 +84,7 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         subject: {
-          select: { id: true, name: true, icon: true },
-        },
-        grade: {
-          select: { id: true, name: true, level: true },
-        },
-        child: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, icon: true, color: true },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -107,23 +131,43 @@ export async function POST(request: NextRequest) {
     // 验证输入
     const validatedData = CreateQuestionSchema.parse(body);
 
+    // 解析标签：将逗号分隔的字符串转为数组
+    const tagNames = validatedData.tags
+      ? validatedData.tags.split(/[,，]/).map(t => t.trim()).filter(Boolean)
+      : [];
+
     // 创建题目
     const question = await prisma.question.create({
       data: {
+        // Json 字段，content 和 answer 是富文本 HTML，analysis 是解析
         content: validatedData.content,
         type: validatedData.type,
         subjectId: validatedData.subjectId,
-        gradeId: validatedData.gradeId,
-        difficulty: validatedData.difficulty,
+        difficulty: typeof validatedData.difficulty === 'number' 
+          ? validatedData.difficulty 
+          : (validatedData.difficulty === 'EASY' ? 1 : validatedData.difficulty === 'MEDIUM' ? 3 : 5),
         answer: validatedData.answer,
-        explanation: validatedData.explanation,
-        tags: validatedData.tags,
-        childId: validatedData.childId,
-        creatorId: session.user.id,
+        analysis: validatedData.explanation || undefined,
+        userId: session.user.id,
+        // 处理标签关联：查找或创建 Tag，再创建 QuestionTag 关联
+        ...(tagNames.length > 0 && {
+          questionTags: {
+            create: await Promise.all(
+              tagNames.map(async (name) => {
+                // 查找或创建标签（同一用户下唯一）
+                const tag = await prisma.tag.upsert({
+                  where: { userId_name: { userId: session.user.id, name } },
+                  update: {},
+                  create: { userId: session.user.id, name },
+                });
+                return { tagId: tag.id };
+              })
+            ),
+          },
+        }),
       },
       include: {
         subject: true,
-        grade: true,
       },
     });
 
@@ -138,14 +182,41 @@ export async function POST(request: NextRequest) {
     console.error("Failed to create question:", error);
 
     if (error.name === "ZodError") {
+      // 提取具体字段错误，给出友好提示
+      const fieldErrors = error.errors || [];
+      const fieldErrorMap: Record<string, string> = {
+        content: "题目内容",
+        answer: "答案",
+        explanation: "解析",
+      };
+      
+      for (const err of fieldErrors) {
+        const field = err.path?.join(".") || "";
+        const fieldName = fieldErrorMap[field] || field;
+        if (err.message?.includes("过长")) {
+          return NextResponse.json(
+            { error: `${fieldName}${err.message}`, field },
+            { status: 400 }
+          );
+        }
+      }
+      
       return NextResponse.json(
-        { error: "数据验证失败", details: error.errors },
+        { error: "数据验证失败", details: fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    // 数据库错误
+    if (error.code === "P2000") {
+      return NextResponse.json(
+        { error: "字段值过长，请压缩图片或减少内容", field: "value_too_long" },
         { status: 400 }
       );
     }
 
     return NextResponse.json(
-      { error: "创建题目失败" },
+      { error: "创建题目失败", details: error.message },
       { status: 500 }
     );
   }

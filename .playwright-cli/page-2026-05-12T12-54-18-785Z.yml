@@ -1,0 +1,47 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - link [ref=e7] [cursor=pointer]:
+          - /url: /dashboard
+          - button [ref=e8]:
+            - img [ref=e9]
+        - heading "题目管理" [level=1] [ref=e11]
+      - generic [ref=e12]:
+        - link "推送记录" [ref=e13] [cursor=pointer]:
+          - /url: /dashboard/tasks
+          - button "推送记录" [ref=e14]:
+            - img [ref=e15]
+            - text: 推送记录
+        - link "PDF导入" [ref=e18] [cursor=pointer]:
+          - /url: /dashboard/questions/import
+          - button "PDF导入" [ref=e19]:
+            - img [ref=e20]
+            - text: PDF导入
+        - link "添加题目" [ref=e23] [cursor=pointer]:
+          - /url: /dashboard/questions/new
+          - button "添加题目" [ref=e24]:
+            - img [ref=e25]
+            - text: 添加题目
+  - main [ref=e26]:
+    - generic [ref=e29]:
+      - generic [ref=e31]:
+        - img [ref=e32]
+        - textbox "搜索题目..." [ref=e35]
+      - combobox [ref=e36]:
+        - option "全部学科" [selected]
+      - combobox [ref=e37]:
+        - option "全部类型" [selected]
+        - option "单选题"
+        - option "多选题"
+        - option "判断题"
+        - option "填空题"
+        - option "简答题"
+        - option "计算题"
+        - option "证明题"
+        - option "作文"
+        - option "阅读理解"
+        - option "听力题"
+      - combobox [ref=e38]:
+        - option "全部年级" [selected]
+    - img [ref=e40]

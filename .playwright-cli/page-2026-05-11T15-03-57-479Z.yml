@@ -1,0 +1,46 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "知识图谱" [level=1] [ref=e4]
+    - paragraph [ref=e5]: 可视化知识点关系，发现学习薄弱点
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - heading "选择科目" [level=3] [ref=e10]
+        - generic [ref=e11]:
+          - combobox [ref=e12] [cursor=pointer]:
+            - img [ref=e13]
+          - combobox [ref=e15]
+      - generic [ref=e16]:
+        - heading "显示设置" [level=3] [ref=e18]
+        - generic [ref=e19]:
+          - generic [ref=e21]: "缩放: 100%"
+          - generic [ref=e25]:
+            - generic [ref=e26]: 显示标签
+            - button "显示" [ref=e27] [cursor=pointer]
+          - generic [ref=e28]:
+            - generic [ref=e29]: 显示掌握度
+            - button "显示" [ref=e30] [cursor=pointer]
+      - generic [ref=e31]:
+        - heading "图例" [level=3] [ref=e33]
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]: 节点颜色（掌握度）
+            - generic [ref=e37]:
+              - text: 80%+ 掌握
+              - text: 60-80%
+              - text: 40-60%
+              - text: 40%以下
+          - generic [ref=e42]:
+            - generic [ref=e43]: 边类型
+            - generic [ref=e44]:
+              - generic [ref=e45]:
+                - img [ref=e46]
+                - text: 先修关系（虚线）
+              - generic [ref=e47]:
+                - img [ref=e48]
+                - text: 相关关系（实线）
+      - heading "统计信息" [level=3] [ref=e51]
+    - generic [ref=e55]:
+      - heading "数学 知识图谱" [level=3] [ref=e56]:
+        - generic [ref=e57]: 数学 知识图谱
+      - paragraph [ref=e58]: 点击节点查看详情，拖动调整视角

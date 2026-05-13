@@ -10,6 +10,8 @@ import {
   ChevronRight,
   BookOpen,
   Sparkles,
+  Home,
+  ArrowLeft,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -118,6 +120,16 @@ export default function ChatPage() {
         {/* 头部 */}
         <div className="flex items-center justify-between">
           <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Button variant="outline" size="sm" onClick={() => router.back()} className="gap-1">
+                <ArrowLeft className="h-4 w-4" />
+                返回
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => router.push("/dashboard")} className="gap-1">
+                <Home className="h-4 w-4" />
+                返回主页
+              </Button>
+            </div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
               <Sparkles className="h-8 w-8 text-purple-500" />
               AI 学习助手
@@ -133,7 +145,7 @@ export default function ChatPage() {
             <SelectContent>
               {children.map((child) => (
                 <SelectItem key={child.id} value={child.id}>
-                  {child.name}
+                  {child.nickname}
                 </SelectItem>
               ))}
             </SelectContent>

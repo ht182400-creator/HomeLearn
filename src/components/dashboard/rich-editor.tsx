@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { Image, Loader2 } from "lucide-react";
 
 interface RichEditorProps {
   value: string;
@@ -20,6 +21,11 @@ export function RichEditor({
 }: RichEditorProps) {
   const [showFormula, setShowFormula] = useState(false);
   const [formulaInput, setFormulaInput] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<HTMLTextAreaElement>(null);
 
   // 常用数学符号快捷插入
   const mathSymbols = [
@@ -169,6 +175,148 @@ export function RichEditor({
     [value, onChange]
   );
 
+  // 处理图片上传
+  const handleImageUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      // 检查文件类型
+      if (!file.type.startsWith("image/")) {
+        alert("请选择图片文件");
+        return;
+      }
+
+      // 检查文件大小（限制 5MB）
+      if (file.size > 5 * 1024 * 1024) {
+        alert("图片大小不能超过 5MB");
+        return;
+      }
+
+      await insertImageToEditor(file);
+    },
+    [value, onChange]
+  );
+
+  // 将图片插入编辑器
+  const insertImageToEditor = useCallback(
+    async (file: File, insertPos?: number) => {
+      setUploading(true);
+
+      try {
+        // 转换为 Base64
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          
+          // 插入 Markdown 图片语法
+          const textarea = document.getElementById(
+            "question-editor"
+          ) as HTMLTextAreaElement;
+          const start = insertPos ?? textarea?.selectionStart ?? value.length;
+          
+          const imageMarkdown = `\n![${file.name}](${base64})\n`;
+          const newValue = value.substring(0, start) + imageMarkdown + value.substring(start);
+          onChange(newValue);
+        };
+        reader.onerror = () => {
+          alert("图片读取失败，请重试");
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("图片上传失败:", error);
+        alert("图片上传失败，请重试");
+      } finally {
+        setUploading(false);
+        // 清空文件输入，允许重复选择同一文件
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }
+    },
+    [value, onChange]
+  );
+
+  // 处理粘贴事件 - 支持 Ctrl+V 粘贴图片
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      const items = e.clipboardData.items;
+      
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          e.preventDefault(); // 阻止默认粘贴文本
+          
+          const file = item.getAsFile();
+          if (file) {
+            // 检查文件大小
+            if (file.size > 5 * 1024 * 1024) {
+              alert("图片大小不能超过 5MB");
+              return;
+            }
+            
+            const textarea = document.getElementById(
+              "question-editor"
+            ) as HTMLTextAreaElement;
+            const start = textarea?.selectionStart ?? value.length;
+            
+            await insertImageToEditor(file, start);
+          }
+          return;
+        }
+      }
+    },
+    [value, onChange, insertImageToEditor]
+  );
+
+  // 处理右键菜单
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent<HTMLTextAreaElement>) => {
+      e.preventDefault();
+      setContextMenuPos({ x: e.clientX, y: e.clientY });
+      setShowContextMenu(true);
+    },
+    []
+  );
+
+  // 关闭右键菜单
+  const closeContextMenu = useCallback(() => {
+    setShowContextMenu(false);
+  }, []);
+
+  // 右键菜单：粘贴图片
+  const handleContextMenuPasteImage = useCallback(async () => {
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+      for (const item of clipboardItems) {
+        for (const type of item.types) {
+          if (type.startsWith("image/")) {
+            const blob = await item.getType(type);
+            const file = new File([blob], "clipboard-image.png", { type });
+            
+            if (file.size > 5 * 1024 * 1024) {
+              alert("图片大小不能超过 5MB");
+              return;
+            }
+            
+            const textarea = document.getElementById(
+              "question-editor"
+            ) as HTMLTextAreaElement;
+            const start = textarea?.selectionStart ?? value.length;
+            
+            await insertImageToEditor(file, start);
+            closeContextMenu();
+            return;
+          }
+        }
+      }
+      alert("剪贴板中没有图片");
+    } catch (error) {
+      console.error("粘贴图片失败:", error);
+      alert("无法访问剪贴板，请确保已授予剪贴板权限");
+    }
+    closeContextMenu();
+  }, [value, onChange, insertImageToEditor, closeContextMenu]);
+
   return (
     <div className={cn("space-y-2", className)}>
       {/* 工具栏 */}
@@ -210,6 +358,41 @@ export function RichEditor({
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
 
+        {/* 图片上传按钮 */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors",
+            uploading
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "hover:bg-gray-200 bg-white border"
+          )}
+          title="插入图片"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              上传中...
+            </>
+          ) : (
+            <>
+              <Image className="h-4 w-4" />
+              图片
+            </>
+          )}
+        </button>
+
+        <div className="w-px h-6 bg-gray-300 mx-1" />
+
         <button
           type="button"
           onClick={() => applyFormat("formula")}
@@ -226,7 +409,7 @@ export function RichEditor({
 
         <div className="w-px h-6 bg-gray-300 mx-1" />
 
-        <span className="text-xs text-gray-500">提示：使用 **加粗**、*斜体*、`代码`</span>
+        <span className="text-xs text-gray-500">提示：**加粗**、*斜体*、`代码`、图片、右键/ Ctrl+V 粘贴图片</span>
       </div>
 
       {/* 数学符号快捷栏 - 当显示公式时 */}
@@ -283,13 +466,50 @@ export function RichEditor({
 
       {/* 编辑器 */}
       <textarea
+        ref={editorRef}
         id="question-editor"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        onContextMenu={handleContextMenu}
         placeholder={placeholder}
         className="w-full min-h-[200px] p-4 border rounded-lg font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       />
+
+      {/* 右键菜单 */}
+      {showContextMenu && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={closeContextMenu}
+          />
+          <div
+            className="fixed z-50 bg-white border rounded-lg shadow-lg py-1 min-w-[160px]"
+            style={{ left: contextMenuPos.x, top: contextMenuPos.y }}
+          >
+            <button
+              type="button"
+              onClick={handleContextMenuPasteImage}
+              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+            >
+              <Image className="h-4 w-4" />
+              粘贴图片
+            </button>
+            <div className="border-t my-1" />
+            <button
+              type="button"
+              onClick={() => {
+                document.execCommand("paste");
+                closeContextMenu();
+              }}
+              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+            >
+              粘贴文本
+            </button>
+          </div>
+        </>
+      )}
 
       {/* 预览提示 */}
       <p className="text-xs text-gray-500">

@@ -1,0 +1,34 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - link [ref=e7] [cursor=pointer]:
+          - /url: /dashboard
+          - button [ref=e8]:
+            - img [ref=e9]
+        - heading "题目管理" [level=1] [ref=e11]
+      - link "添加题目" [ref=e12] [cursor=pointer]:
+        - /url: /dashboard/questions/new
+        - button "添加题目" [ref=e13]:
+          - img [ref=e14]
+          - text: 添加题目
+  - main [ref=e15]:
+    - generic [ref=e18]:
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - textbox "搜索题目..." [ref=e24]
+      - combobox [ref=e25]:
+        - option "全部学科" [selected]
+      - combobox [ref=e26]:
+        - option "全部类型" [selected]
+        - option "单选题"
+        - option "多选题"
+        - option "判断题"
+        - option "填空题"
+        - option "简答题"
+        - option "计算题"
+        - option "证明题"
+        - option "作文"
+        - option "阅读理解"
+        - option "听力题"
+    - img [ref=e28]

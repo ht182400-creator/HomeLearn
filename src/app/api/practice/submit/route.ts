@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       where: {
         id: validatedData.sessionId,
         child: {
-          parentId: session.user.id,
+          userId: session.user.id,
         },
       },
       include: {
@@ -55,15 +55,17 @@ export async function POST(request: NextRequest) {
         }
 
         // 判题
-        const isCorrect = normalizeAndCompare(answer.answer, question.answer);
+        const isCorrect = normalizeAndCompare(
+          answer.answer,
+          typeof question.answer === 'string' ? question.answer : JSON.stringify(question.answer)
+        );
 
         // 创建答案记录
         const practiceAnswer = await prisma.practiceAnswer.create({
           data: {
             sessionId: validatedData.sessionId,
             questionId: answer.questionId,
-            userAnswer: answer.answer,
-            correctAnswer: question.answer,
+            answer: answer.answer,
             isCorrect,
             timeSpent: answer.timeSpent,
           },
@@ -73,7 +75,7 @@ export async function POST(request: NextRequest) {
         if (!isCorrect) {
           await addToWrongBook(
             practiceSession.childId,
-            practiceSession.subjectId,
+            practiceSession.subjectId || "",
             question.id,
             session.user.id
           );
@@ -83,7 +85,6 @@ export async function POST(request: NextRequest) {
           questionId: answer.questionId,
           isCorrect,
           userAnswer: answer.answer,
-          correctAnswer: question.answer,
         };
       })
     );
@@ -186,7 +187,7 @@ async function addToWrongBook(
     where: {
       childId,
       questionId,
-      status: "NOT_REVIEWED",
+      mastered: false,
     },
   });
 
@@ -195,8 +196,8 @@ async function addToWrongBook(
     await prisma.wrongQuestion.update({
       where: { id: existing.id },
       data: {
-        wrongCount: { increment: 1 },
-        lastWrongAt: new Date(),
+        attempts: { increment: 1 },
+        lastAttempt: new Date(),
       },
     });
   } else {
@@ -204,11 +205,11 @@ async function addToWrongBook(
     await prisma.wrongQuestion.create({
       data: {
         childId,
-        subjectId,
         questionId,
-        wrongCount: 1,
-        status: "NOT_REVIEWED",
-        creatorId,
+        wrongAnswer: { createdAt: new Date() },
+        attempts: 1,
+        lastAttempt: new Date(),
+        source: "PRACTICE",
       },
     });
   }

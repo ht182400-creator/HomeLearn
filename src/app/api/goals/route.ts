@@ -20,10 +20,10 @@ export async function POST(request: NextRequest) {
     const validated = CreateGoalSchema.parse(body);
 
     // 验证孩子归属
-    const child = await prisma.child.findFirst({
+    const child = await prisma.childAccount.findFirst({
       where: {
         id: validated.childId,
-        parentId: session.user.id,
+        userId: session.user.id,
       },
     });
 
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       data: {
         id: uuidv4(),
         childId: validated.childId,
+        parentId: session.user.id,
         title: validated.title,
         description: validated.description,
         type: validated.type,
@@ -88,10 +89,10 @@ export async function GET(request: NextRequest) {
     }
 
     // 验证孩子归属
-    const child = await prisma.child.findFirst({
+    const child = await prisma.childAccount.findFirst({
       where: {
         id: childId,
-        parentId: session.user.id,
+        userId: session.user.id,
       },
     });
 

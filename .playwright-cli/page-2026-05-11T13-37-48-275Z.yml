@@ -1,0 +1,74 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - img [ref=e6]
+          - generic [ref=e9]: 甜家学 HomeLearn
+        - navigation [ref=e10]:
+          - link "登录" [ref=e11] [cursor=pointer]:
+            - /url: /login
+          - link "立即开始" [ref=e12] [cursor=pointer]:
+            - /url: /register
+    - generic [ref=e14]:
+      - heading "让每个家庭都拥有 AI 学习助手" [level=1] [ref=e15]
+      - paragraph [ref=e16]:
+        - text: 家长主导、数据私有、AI 赋能
+        - text: 科学的错题复习体系，告别无效刷题
+      - generic [ref=e17]:
+        - link "免费开始使用" [ref=e18] [cursor=pointer]:
+          - /url: /register
+        - link "已有账户登录" [ref=e19] [cursor=pointer]:
+          - /url: /login
+    - generic [ref=e21]:
+      - heading "为什么选择甜家学？" [level=2] [ref=e22]
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - img [ref=e26]
+          - heading "AI 智能辅导" [level=3] [ref=e36]
+          - paragraph [ref=e37]: 拍照即识别，AI 详细讲解每道题，分步骤引导思考，支持多学科
+        - generic [ref=e38]:
+          - img [ref=e40]
+          - heading "科学艾宾浩斯复习" [level=3] [ref=e43]
+          - paragraph [ref=e44]: 基于遗忘曲线自动安排复习时间，告别边学边忘，真正记住每道错题
+        - generic [ref=e45]:
+          - img [ref=e47]
+          - heading "家长深度参与" [level=3] [ref=e52]
+          - paragraph [ref=e53]: 家长可手写讲解、录制视频，亲子共学，不只是旁观者
+        - generic [ref=e54]:
+          - img [ref=e56]
+          - heading "数据完全私有" [level=3] [ref=e58]
+          - paragraph [ref=e59]: 部署在本地，数据不出家门，隐私安全家长掌控
+        - generic [ref=e60]:
+          - img [ref=e62]
+          - heading "多专项学科支持" [level=3] [ref=e64]
+          - paragraph [ref=e65]: 数学公式、几何画板、英语语音评测、文言文注音，全面覆盖
+        - generic [ref=e66]:
+          - img [ref=e68]
+          - heading "零成本启动" [level=3] [ref=e71]
+          - paragraph [ref=e72]: 使用免费 AI API，家庭使用零成本，后续无隐藏费用
+    - generic [ref=e74]:
+      - heading "三步开启智能学习" [level=2] [ref=e75]
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - generic [ref=e78]: "1"
+          - heading "录入题目" [level=3] [ref=e79]
+          - paragraph [ref=e80]: 拍照、手动输入、批量导入，把孩子的作业和试卷变成专属题库
+        - generic [ref=e81]:
+          - generic [ref=e82]: "2"
+          - heading "AI 智能练习" [level=3] [ref=e83]
+          - paragraph [ref=e84]: 选择题型开始练习，AI 即时判题，错题自动收入错题本
+        - generic [ref=e85]:
+          - generic [ref=e86]: "3"
+          - heading "科学复习" [level=3] [ref=e87]
+          - paragraph [ref=e88]: 艾宾浩斯提醒复习，AI 讲解，家长手把手辅导，牢固掌握
+    - generic [ref=e90]:
+      - heading "立即开始，告别无效刷题" [level=2] [ref=e91]
+      - paragraph [ref=e92]: 完全免费，5分钟搭建属于你们家庭的学习平台
+      - link "立即免费开始" [ref=e93] [cursor=pointer]:
+        - /url: /register
+    - contentinfo [ref=e94]:
+      - generic [ref=e95]:
+        - paragraph [ref=e96]: © 2024 甜家学 HomeLearn. 数据私有，亲子共学。
+        - paragraph [ref=e97]: Made with ❤️ for families
+  - alert [ref=e98]

@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - img [ref=e6]
+      - heading "欢迎回来" [level=3] [ref=e9]
+      - paragraph [ref=e10]: 输入您的账号信息登录到甜家学平台
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e22]: 邮箱或密码错误
+        - generic [ref=e13]:
+          - text: 用户名 / 邮箱
+          - textbox "用户名 / 邮箱" [ref=e14]:
+            - /placeholder: 请输入用户名或邮箱
+            - text: admin@test.com
+        - generic [ref=e15]:
+          - text: 密码
+          - textbox "密码" [ref=e16]: password123
+      - generic [ref=e17]:
+        - button "登录" [ref=e18] [cursor=pointer]
+        - paragraph [ref=e19]:
+          - text: 还没有账户？
+          - link "立即注册" [ref=e20] [cursor=pointer]:
+            - /url: /register
+  - alert [ref=e21]

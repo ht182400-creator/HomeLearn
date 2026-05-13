@@ -32,7 +32,7 @@ export async function PUT(
       return NextResponse.json({ error: "目标不存在" }, { status: 404 });
     }
 
-    if (existingGoal.child.parentId !== session.user.id) {
+    if (existingGoal.child.userId !== session.user.id) {
       return NextResponse.json({ error: "无权访问此目标" }, { status: 403 });
     }
 
@@ -97,7 +97,7 @@ export async function DELETE(
       return NextResponse.json({ error: "目标不存在" }, { status: 404 });
     }
 
-    if (existingGoal.child.parentId !== session.user.id) {
+    if (existingGoal.child.userId !== session.user.id) {
       return NextResponse.json({ error: "无权访问此目标" }, { status: 403 });
     }
 

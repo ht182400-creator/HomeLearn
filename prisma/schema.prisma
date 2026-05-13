@@ -24,6 +24,15 @@ model User {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   
+  // ========== Phase 2 扩展字段 ==========
+  phone         String?       // 手机号
+  nickname      String?       // 昵称
+  lastLoginAt   DateTime?     // 最后登录时间
+  loginCount    Int           @default(0)  // 登录次数
+  status        String        @default("ACTIVE")  // 状态: ACTIVE, BANNED, PENDING
+  extra         Json?         // 备用扩展字段
+  // =====================================
+  
   // 关联
   children        ChildAccount[]
   questions       Question[]
@@ -31,6 +40,7 @@ model User {
   recordings      Recording[]
   accounts        Account[]
   sessions        Session[]
+  tasks           PracticeTask[]  // 创建的练习任务
   
   @@map("users")
 }
@@ -38,6 +48,25 @@ model User {
 enum UserRole {
   PARENT      // 家长
   ADMIN       // 系统管理员(预留)
+}
+
+enum Gender {
+  MALE        // 男
+  FEMALE      // 女
+  OTHER       // 其他
+}
+
+enum QuestionSource {
+  MANUAL       // 手动创建
+  AI_GENERATE  // AI生成
+  IMPORT       // 批量导入
+  COPY         // 复制
+}
+
+enum AuthStatus {
+  PENDING    // 待审核
+  APPROVED   // 已通过
+  REJECTED   // 已驳回
 }
 
 // NextAuth 适配器
@@ -88,6 +117,10 @@ model ChildAccount {
   id            String        @id @default(cuid())
   userId        String
   nickname      String
+  // ========== 孩子独立登录字段 ==========
+  username      String?       @unique  // 孩子独立登录的用户名
+  passwordHash  String?       // 孩子独立登录的密码
+  // =====================================
   grade         Grade?
   avatar        String?
   preferences   Json?         // 学习偏好设置
@@ -95,11 +128,27 @@ model ChildAccount {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   
+  // ========== Phase 1 扩展字段 ==========
+  gender        Gender?       // 性别
+  birthday      DateTime?     // 生日
+  school        String?       // 学校
+  className     String?       // 班级
+  totalStudyTime Int          @default(0)  // 累计学习时间(分钟)
+  totalPractice  Int          @default(0)  // 累计练习次数
+  totalCorrect   Int          @default(0)  // 累计正确数
+  extra         Json?         // 备用扩展字段
+  // =====================================
+  
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   wrongQuestions WrongQuestion[]
   speechResults  SpeechResult[]
   reviewRecords  ReviewRecord[]
   practiceRecords PracticeRecord[]
+  tasks         PracticeTask[]  // 收到的练习任务
+  chatSessions  ChatSession[]   // AI 对话会话
+  goals         LearningGoal[]  // 学习目标
+  practiceSessions PracticeSession[]  // 练习会话
+  reports       LearningReport[]  // 学习报告
   
   @@index([userId])
   @@map("child_accounts")
@@ -132,8 +181,17 @@ model Subject {
   color         String?       // 主题色
   order         Int          @default(0)
   
+  // ========== Phase 3 扩展字段 ==========
+  description   String?       // 学科描述
+  isActive      Boolean       @default(true)  // 是否启用
+  extra         Json?         // 备用扩展字段
+  // =====================================
+  
   questions     Question[]
   topics        Topic[]
+  practiceTasks PracticeTask[]  // 关联的练习任务
+  goals         LearningGoal[]  // 学习目标
+  practiceSessions PracticeSession[]  // 练习会话
   
   @@map("subjects")
 }
@@ -146,6 +204,15 @@ model Topic {
   parentId      String?       // 父级知识点ID(支持多级)
   level         Int           @default(1)
   order         Int          @default(0)
+  
+  // ========== Phase 2 扩展字段 ==========
+  description   String?       // 知识点描述
+  difficulty    Int?          // 难度等级 1-5
+  keywords      String[]      // 关键词搜索
+  isActive      Boolean       @default(true)  // 是否启用
+  usageCount    Int           @default(0)  // 使用次数
+  extra         Json?         // 备用扩展字段
+  // =====================================
   
   subject       Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   parent        Topic?       @relation("TopicHierarchy", fields: [parentId], references: [id])
@@ -164,6 +231,12 @@ model Tag {
   color         String          @default("#3B82F6")
   type          TagType         @default(CUSTOM)
   createdAt     DateTime        @default(now())
+  
+  // ========== Phase 3 扩展字段 ==========
+  description   String?         // 标签描述
+  usageCount    Int             @default(0)  // 使用次数
+  extra         Json?           // 备用扩展字段
+  // =====================================
   
   questionTags  QuestionTag[]
   
@@ -197,6 +270,19 @@ model Question {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   
+  // ========== Phase 1 扩展字段 ==========
+  grade         Grade?          // 适用年级，不填=通用题
+  source        QuestionSource  @default(MANUAL)  // 来源
+  usageCount    Int             @default(0)  // 被练习使用次数
+  wrongCount    Int             @default(0)  // 被错题本收录次数
+  likeCount     Int             @default(0)  // 点赞数
+  collectCount  Int             @default(0)  // 收藏数
+  authStatus    AuthStatus      @default(APPROVED)  // 审核状态
+  rejectReason  String?         // 驳回原因
+  standardTime  Int?            // 标准作答时间(秒)
+  extra         Json?           // 备用扩展字段
+  // =====================================
+  
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   subject         Subject           @relation(fields: [subjectId], references: [id])
   versions        QuestionVersion[]
@@ -205,11 +291,13 @@ model Question {
   questionTags    QuestionTag[]
   attachments     Attachment[]
   recordings      Recording[]
+  practiceAnswers PracticeAnswer[]  // 练习答案
   
   @@index([userId])
   @@index([subjectId])
   @@index([difficulty])
   @@index([type])
+  @@index([grade])
   @@map("questions")
 }
 
@@ -221,9 +309,13 @@ enum QuestionType {
   SHORT_ANSWER     // 简答题
   CALCULATION      // 计算题
   PROOF            // 证明题
-  COMPOSITION      // 作文
-  READING          // 阅读理解
-  LISTENING        // 听力题
+  COMPREHENSIVE    // 综合题 (与Zod验证器一致)
+  FREE_RESPONSE    // 解答题 (与Zod验证器一致)
+  OTHER            // 其他题型 (与Zod验证器一致)
+  // 兼容旧值 (后续迁移后删除)
+  COMPOSITION      // 作文 (旧值，兼容用)
+  READING          // 阅读理解 (旧值，兼容用)
+  LISTENING        // 听力题 (旧值，兼容用)
 }
 
 enum QuestionStatus {
@@ -240,6 +332,12 @@ model QuestionVersion {
   answer        Json
   analysis      Json?
   createdAt     DateTime      @default(now())
+  
+  // ========== Phase 3 扩展字段 ==========
+  changeReason  String?       // 变更原因
+  createdBy     String?       // 创建人ID
+  extra         Json?         // 备用扩展字段
+  // =====================================
   
   question      Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
   
@@ -319,6 +417,13 @@ model WrongQuestion {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   
+  // ========== Phase 3 扩展字段 ==========
+  wrongType       String?         // 错因类型
+  aiAnalysis      Json?           // AI分析结果
+  parentFeedback  String?         // 家长反馈
+  extra           Json?           // 备用扩展字段
+  // =====================================
+  
   child           ChildAccount    @relation(fields: [childId], references: [id], onDelete: Cascade)
   question        Question        @relation(fields: [questionId], references: [id])
   reviews         ReviewRecord[]
@@ -347,6 +452,12 @@ model ReviewRecord {
   reviewMethod    ReviewMethod?
   timeSpent       Int?            // 用时(秒)
   reviewedAt      DateTime        @default(now())
+  
+  // ========== Phase 3 扩展字段 ==========
+  understandingLevel Int?         // 理解程度 1-5
+  difficultyRating  Int?         // 题目难度评分 1-5
+  extra             Json?        // 备用扩展字段
+  // =====================================
   
   wrongQuestion   WrongQuestion   @relation(fields: [wrongQuestionId], references: [id], onDelete: Cascade)
   child           ChildAccount    @relation(fields: [childId], references: [id])
@@ -380,10 +491,144 @@ model PracticeRecord {
   completedAt     DateTime?
   createdAt       DateTime        @default(now())
   
+  // ========== Phase 1 扩展字段 ==========
+  wrongQuestionIds String[]       // 本次错题ID列表
+  score            Float?         // 总分
+  topicSummary     Json?          // 知识点掌握情况
+  extra            Json?          // 备用扩展字段
+  // =====================================
+  
   child           ChildAccount    @relation(fields: [childId], references: [id])
   
   @@index([childId])
   @@map("practice_records")
+}
+
+// ============================================
+// 练习任务系统（家长推题）
+// ============================================
+
+model PracticeTask {
+  id                   String        @id @default(cuid())
+  parentId             String        // 家长ID (关联 User)
+  childId              String        // 孩子ID (关联 ChildAccount)
+  subjectId            String?       // 科目ID (关联 Subject, 可选)
+  title                String        // 任务名称
+  description          String?       // 任务描述/备注
+  questionIds          String[]      // 题目ID列表
+  questionCount        Int           @default(0)  // 题目数量
+  dueDate              DateTime?     // 截止日期 (可选，不填时默认今天+7天)
+  status               TaskStatus    @default(PENDING)  // 任务状态
+  allowSkip            Boolean       @default(true)     // 是否允许跳过题目
+  requireConfirmation  Boolean       @default(false)    // 是否需要家长确认完成
+  completedAt          DateTime?     // 完成时间
+  answers              Json?         // 孩子的答案记录 {questionId: answer}
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  
+  // 关联
+  parent              User          @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  child               ChildAccount  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  subject             Subject?      @relation(fields: [subjectId], references: [id])
+  
+  @@index([parentId])
+  @@index([childId])
+  @@index([status])
+  @@map("practice_tasks")
+}
+
+// ============================================
+// 练习会话 (PracticeSession) - 孩子练习过程中的会话
+// ============================================
+
+model PracticeSession {
+  id            String        @id @default(cuid())
+  childId       String
+  subjectId     String?
+  taskId        String?       // 可选关联的任务
+  status        SessionStatus @default(IN_PROGRESS)
+  startedAt     DateTime      @default(now())
+  completedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  source        String?       // 来源
+  questionCount Int           @default(0)  // 题目数量
+  correctCount  Int           @default(0)  // 正确数
+  wrongCount    Int           @default(0)  // 错误数
+  accuracy      Int?          // 正确率(%)
+  totalTimeSpent Int?         // 总用时(秒)
+  
+  // 关系
+  child         ChildAccount  @relation(fields: [childId], references: [id])
+  subject       Subject?      @relation(fields: [subjectId], references: [id])
+  answers       PracticeAnswer[]
+  
+  @@index([childId])
+  @@map("practice_sessions")
+}
+
+model PracticeAnswer {
+  id            String      @id @default(cuid())
+  sessionId     String
+  questionId    String
+  answer        String?     @db.Text  // 孩子的答案
+  isCorrect     Boolean?
+  timeSpent     Int?        // 耗时(秒)
+  createdAt     DateTime    @default(now())
+  
+  // 关系
+  session       PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question      Question    @relation(fields: [questionId], references: [id])
+  
+  @@index([sessionId])
+  @@map("practice_answers")
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum TaskStatus {
+  PENDING         // 待完成
+  IN_PROGRESS    // 进行中
+  PENDING_CONFIRM // 待家长确认
+  COMPLETED      // 已完成
+  OVERDUE        // 已逾期
+  CANCELLED      // 已取消
+}
+
+// ============================================
+// 站内通知系统
+// ============================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   // 接收通知的用户ID (User 或 ChildAccount)
+  userType  UserType @default(USER)  // 用户类型：家长或孩子
+  type      NotificationType  // 通知类型
+  title     String
+  content   String
+  taskId    String?  // 关联任务ID
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+enum UserType {
+  USER   // 家长账户
+  CHILD  // 孩子账户
+}
+
+enum NotificationType {
+  TASK_ASSIGNED     // 新任务通知
+  TASK_SUBMITTED    // 任务已提交
+  TASK_CONFIRMED    // 任务已确认完成
+  TASK_REMINDER     // 任务到期提醒
+  TASK_OVERDUE      // 任务已逾期
 }
 
 enum PracticeType {
@@ -410,6 +655,14 @@ model SpeechTemplate {
   usageCount    Int             @default(0)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  
+  // ========== Phase 3 扩展字段 ==========
+  phoneticNotes    String?       // 发音技巧说明
+  exampleSentences String[]      // 例句
+  pronunciationTips String?      // 发音提示
+  isFavorite       Boolean       @default(false)  // 是否收藏
+  extra            Json?         // 备用扩展字段
+  // =====================================
   
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   results       SpeechResult[]
@@ -441,6 +694,14 @@ model SpeechResult {
   duration        Int?
   createdAt       DateTime        @default(now())
   
+  // ========== Phase 3 扩展字段 ==========
+  wordDetails     Json?           // 单词详情
+  problemPhonemes String[]        // 问题音素
+  improvementTips String?         // 改进建议
+  comparisonHistory Json?         // 历史对比
+  extra           Json?           // 备用扩展字段
+  // =====================================
+  
   template        SpeechTemplate  @relation(fields: [templateId], references: [id])
   child           ChildAccount    @relation(fields: [childId], references: [id])
   
@@ -468,6 +729,15 @@ model Recording {
   likes         Int             @default(0)
   isPublic      Boolean         @default(true)
   createdAt     DateTime        @default(now())
+  
+  // ========== Phase 3 扩展字段 ==========
+  category      String?         // 分类
+  isFavorite    Boolean         @default(false)  // 是否收藏
+  downloadCount Int             @default(0)  // 下载次数
+  shareCount    Int             @default(0)  // 分享次数
+  source        String?         // 来源
+  extra         Json?           // 备用扩展字段
+  // =====================================
   
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   question      Question?       @relation(fields: [questionId], references: [id], onDelete: SetNull)
@@ -500,6 +770,15 @@ model ChineseText {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   
+  // ========== Phase 3 扩展字段 ==========
+  background    String?         // 创作背景
+  appreciation  String?         // 文学赏析
+  relatedTexts  String[]        // 相关篇目
+  difficulty    Int?            // 难度等级 1-5
+  readingTime   Int?            // 预计阅读时间(分钟)
+  extra         Json?           // 备用扩展字段
+  // =====================================
+  
   @@map("chinese_texts")
 }
 
@@ -520,6 +799,158 @@ model AIConversation {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   
+  // ========== Phase 2 扩展字段 ==========
+  title         String?         // 对话标题
+  summary       String?         // 对话摘要
+  messageCount  Int             @default(0)  // 消息数量
+  lastMessageAt DateTime?       // 最后消息时间
+  subjectName   String?         // 科目名称
+  isFavorite    Boolean        @default(false)  // 是否收藏
+  isResolved    Boolean         @default(false)  // 是否已解决
+  extra         Json?          // 备用扩展字段
+  // =====================================
+  
   @@index([childId])
   @@map("ai_conversations")
+}
+
+// ============================================
+// AI 对话会话 (ChatSession)
+// ============================================
+
+model ChatSession {
+  id            String        @id @default(cuid())
+  childId       String
+  parentId      String        // 孩子的家长ID，用于权限验证
+  subject       String?       // 当前会话的学科
+  summary       String        @default("新对话")
+  messageCount  Int           @default(0)
+  lastMessageAt DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // 关系
+  child         ChildAccount  @relation(fields: [childId], references: [id])
+  messages      ChatMessage[]
+
+  @@index([childId])
+  @@index([parentId])
+  @@map("chat_sessions")
+}
+
+// ============================================
+// AI 对话消息 (ChatMessage)
+// ============================================
+
+model ChatMessage {
+  id            String      @id @default(cuid())
+  sessionId     String
+  role          String      // "user" | "assistant" | "system"
+  content       String      @db.Text
+  tokens        Int?        // 消息token数
+  createdAt     DateTime    @default(now())
+
+  // 关系
+  session       ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("chat_messages")
+}
+
+// ============================================
+// 学习目标系统 (LearningGoal)
+// ============================================
+
+model LearningGoal {
+  id            String        @id @default(cuid())
+  childId       String
+  parentId      String        // 家长ID
+  title         String        // 目标标题
+  description   String?       // 目标描述
+  type          GoalType      // 目标类型
+  targetValue   Float         // 目标值
+  currentValue  Float         @default(0)  // 当前值
+  unit          String?       // 单位
+  startDate     DateTime      @default(now())
+  endDate       DateTime?     // 结束日期
+  subjectId     String?       // 关联科目
+  status        GoalStatus    @default(active)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // 关系
+  child         ChildAccount  @relation(fields: [childId], references: [id])
+  subject       Subject?      @relation(fields: [subjectId], references: [id])
+  progressRecords GoalProgressRecord[]
+
+  @@index([childId])
+  @@index([parentId])
+  @@map("learning_goals")
+}
+
+// ============================================
+// 目标进度记录 (GoalProgressRecord)
+// ============================================
+
+model GoalProgressRecord {
+  id            String        @id @default(cuid())
+  goalId        String
+  value         Float         // 增量值
+  note          String?       // 备注
+  createdAt     DateTime      @default(now())
+
+  // 关系
+  goal          LearningGoal  @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@map("goal_progress_records")
+}
+
+enum GoalType {
+  daily    // 每日
+  weekly   // 每周
+  monthly  // 每月
+  custom   // 自定义
+}
+
+enum GoalStatus {
+  active      // 进行中
+  paused      // 已暂停
+  completed   // 已完成
+  cancelled   // 已取消
+}
+
+// ============================================
+// 学习报告系统
+// ============================================
+
+model LearningReport {
+  id               String   @id @default(cuid())
+  childId          String
+  type             ReportType
+  periodStart      DateTime
+  periodEnd        DateTime
+  totalQuestions   Int      @default(0)
+  correctQuestions Int      @default(0)
+  accuracyRate     Int      @default(0)
+  totalPracticeTime Int?    // 总练习时长(秒)
+  summary          String?  // 报告摘要
+  subjectBreakdown Json?    // 科目分布详情
+  masteredQuestions Int     @default(0)
+  reviewedQuestions Int     @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // 关系
+  child           ChildAccount @relation(fields: [childId], references: [id])
+
+  @@index([childId])
+  @@index([type])
+  @@map("learning_reports")
+}
+
+enum ReportType {
+  DAILY
+  WEEKLY
+  MONTHLY
 }

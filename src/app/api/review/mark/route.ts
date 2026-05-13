@@ -23,7 +23,11 @@ export async function POST(request: NextRequest) {
       where: { id: validatedData.wrongQuestionId },
       include: {
         child: true,
-        question: true,
+        question: {
+          include: {
+            subject: true,
+          },
+        },
       },
     });
 
@@ -54,10 +58,10 @@ export async function POST(request: NextRequest) {
       where: { id: validatedData.wrongQuestionId },
       data: {
         reviewCount: newReviewCount,
-        lastReviewDate: new Date(),
-        nextReviewDate,
-        isMastered,
-        reviewNote: validatedData.reviewNote,
+        lastReview: new Date(),
+        nextReview: nextReviewDate,
+        mastered: isMastered,
+        notes: validatedData.reviewNote || undefined,
       },
       include: {
         question: {
@@ -73,7 +77,7 @@ export async function POST(request: NextRequest) {
       await prisma.wrongQuestion.update({
         where: { id: validatedData.wrongQuestionId },
         data: {
-          wrongCount: { increment: 1 },
+          attempts: { increment: 1 },
         },
       });
     }

@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 创建默认学科
+    // 创建默认学科（如果不存在）
     await prisma.subject.createMany({
       data: [
         { name: '数学', code: 'MATH', color: '#3B82F6', order: 1 },
@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
         { name: '物理', code: 'PHYSICS', color: '#8B5CF6', order: 4 },
         { name: '化学', code: 'CHEMISTRY', color: '#EC4899', order: 5 },
       ],
+      skipDuplicates: true,
     });
 
     return NextResponse.json({

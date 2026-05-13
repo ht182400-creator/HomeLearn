@@ -1,0 +1,135 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "新建题目" [level=1] [ref=e4]
+      - paragraph [ref=e5]: 创建新的练习题目，支持富文本编辑和公式输入
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - heading "基本信息" [level=2] [ref=e8]
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - generic [ref=e11]: 科目 *
+            - combobox "科目 *" [ref=e12]:
+              - option "请选择科目" [selected]
+              - option "数学"
+              - option "英语"
+              - option "语文"
+              - option "物理"
+              - option "化学"
+          - generic [ref=e13]:
+            - generic [ref=e14]: 年级 *
+            - combobox "年级 *" [ref=e15]:
+              - option "请选择年级" [selected]
+              - option "小学一年级"
+              - option "小学二年级"
+              - option "小学三年级"
+              - option "小学四年级"
+              - option "小学五年级"
+              - option "小学六年级"
+              - option "初一"
+              - option "初二"
+              - option "初三"
+              - option "高一"
+              - option "高二"
+              - option "高三"
+          - generic [ref=e16]:
+            - generic [ref=e17]: 题目类型 *
+            - combobox "题目类型 *" [ref=e18]:
+              - option "单选题" [selected]
+              - option "多选题"
+              - option "判断题"
+              - option "填空题"
+              - option "简答题"
+              - option "计算题"
+              - option "证明题"
+              - option "综合题"
+          - generic [ref=e19]:
+            - text: 难度
+            - generic [ref=e20]:
+              - button "简单" [ref=e21] [cursor=pointer]
+              - button "中等" [ref=e22] [cursor=pointer]
+              - button "困难" [ref=e23] [cursor=pointer]
+          - generic [ref=e24]:
+            - text: 知识点标签
+            - textbox "知识点标签" [ref=e25]:
+              - /placeholder: 多个标签用逗号分隔，如：一元二次方程, 判别式, 韦达定理
+            - paragraph [ref=e26]: 有助于后续按知识点筛选和智能推荐
+      - generic [ref=e27]:
+        - heading "题目内容" [level=2] [ref=e28]
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - button "撤销" [ref=e47] [cursor=pointer]:
+              - img [ref=e48]
+            - button "重做" [ref=e51] [cursor=pointer]:
+              - img [ref=e52]
+            - button "加粗 (Ctrl+B)" [ref=e56] [cursor=pointer]:
+              - img [ref=e57]
+            - button "斜体 (Ctrl+I)" [ref=e60] [cursor=pointer]:
+              - img [ref=e61]
+            - button "删除线" [ref=e63] [cursor=pointer]:
+              - img [ref=e64]
+            - button "行内代码" [ref=e67] [cursor=pointer]:
+              - img [ref=e68]
+            - button "无序列表" [ref=e72] [cursor=pointer]:
+              - img [ref=e73]
+            - button "有序列表" [ref=e74] [cursor=pointer]:
+              - img [ref=e75]
+            - button "引用" [ref=e78] [cursor=pointer]:
+              - img [ref=e79]
+            - button "插入图片" [ref=e83] [cursor=pointer]:
+              - img [ref=e84]
+            - button "清除格式" [ref=e88] [cursor=pointer]:
+              - img [ref=e89]
+          - paragraph [ref=e97]: 这是一道数学测试题目
+          - generic [ref=e98]:
+            - img [ref=e99]
+            - generic [ref=e102]: 支持粘贴图片 (Ctrl+V) 或拖拽图片到此处
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - heading "答案 *" [level=2] [ref=e33]
+          - generic [ref=e34]: 输入选项字母，如：A
+        - generic [ref=e35]:
+          - text: 参考答案
+          - generic [ref=e36]:
+            - generic [ref=e37]:
+              - button "加粗" [ref=e103] [cursor=pointer]:
+                - img [ref=e104]
+              - button "斜体" [ref=e107] [cursor=pointer]:
+                - img [ref=e108]
+              - button "代码" [ref=e110] [cursor=pointer]:
+                - img [ref=e111]
+              - button "列表" [ref=e115] [cursor=pointer]:
+                - img [ref=e116]
+              - button "编号" [ref=e117] [cursor=pointer]:
+                - img [ref=e118]
+              - button "引用" [ref=e121] [cursor=pointer]:
+                - img [ref=e122]
+              - button "插入图片" [ref=e126] [cursor=pointer]:
+                - img [ref=e127]
+            - paragraph [ref=e133]
+      - generic [ref=e38]:
+        - heading "答案解析（可选）" [level=2] [ref=e39]
+        - generic [ref=e40]:
+          - text: 解题思路
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - button "加粗" [ref=e134] [cursor=pointer]:
+                - img [ref=e135]
+              - button "斜体" [ref=e138] [cursor=pointer]:
+                - img [ref=e139]
+              - button "代码" [ref=e141] [cursor=pointer]:
+                - img [ref=e142]
+              - button "列表" [ref=e146] [cursor=pointer]:
+                - img [ref=e147]
+              - button "编号" [ref=e148] [cursor=pointer]:
+                - img [ref=e149]
+              - button "引用" [ref=e152] [cursor=pointer]:
+                - img [ref=e153]
+              - button "插入图片" [ref=e157] [cursor=pointer]:
+                - img [ref=e158]
+            - paragraph [ref=e164]
+          - paragraph [ref=e43]: AI 可以根据解题思路生成更详细的讲解视频或互动式讲解
+      - generic [ref=e44]:
+        - button "取消" [ref=e45] [cursor=pointer]
+        - button "创建题目" [ref=e46] [cursor=pointer]
+  - alert [ref=e165]

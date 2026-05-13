@@ -338,10 +338,13 @@ export function PracticeSession({
               </span>
             </div>
 
-            {/* 题目内容 */}
-            <div className="mb-6 text-lg leading-relaxed whitespace-pre-wrap">
-              {currentQuestion.content}
-            </div>
+            {/* 题目内容 - 使用 dangerouslySetInnerHTML 渲染 HTML */}
+            <div 
+              className="mb-6 text-lg leading-relaxed prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ 
+                __html: typeof currentQuestion.content === 'string' ? currentQuestion.content : String(currentQuestion.content) 
+              }} 
+            />
 
             {/* 答案区域 */}
             <div className="space-y-3">

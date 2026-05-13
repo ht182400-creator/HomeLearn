@@ -6,7 +6,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RichEditor } from "./rich-editor";
+import { TiptapEditor } from "./tiptap-editor";
+import { TiptapSimpleEditor } from "./tiptap-simple-editor";
+import { useToast } from "@/components/ui/toast";
 import {
   CreateQuestionSchema,
   QuestionTypeLabels,
@@ -47,9 +49,11 @@ export function QuestionForm({
   questionId,
 }: QuestionFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // 表单数据
   const [formData, setFormData] = useState<CreateQuestionInput>({
@@ -67,7 +71,6 @@ export function QuestionForm({
   // 下拉选项数据
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
-  const [showPreview, setShowPreview] = useState(false);
 
   // 加载科目和年级数据
   useEffect(() => {
@@ -100,6 +103,20 @@ export function QuestionForm({
 
   // 表单验证
   const validateForm = useCallback((): boolean => {
+    // 检查题目内容是否为空（移除 HTML 标签后）
+    const contentText = formData.content?.replace(/<[^>]*>/g, "").trim() || "";
+    if (!contentText) {
+      setErrors({ content: "题目内容不能为空" });
+      return false;
+    }
+
+    // 检查答案是否为空
+    const answerText = formData.answer?.replace(/<[^>]*>/g, "").trim() || "";
+    if (!answerText) {
+      setErrors({ answer: "答案不能为空" });
+      return false;
+    }
+
     try {
       CreateQuestionSchema.parse(formData);
       setErrors({});
@@ -119,7 +136,19 @@ export function QuestionForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    console.log("=== 表单提交开始 ===");
+    console.log("表单数据:", JSON.stringify(formData, null, 2));
+    console.log("content HTML:", formData.content);
+    console.log("content 长度:", formData.content?.length);
+
+    // 检查 content 是否为空或只有空白标签
+    const contentText = formData.content?.replace(/<[^>]*>/g, "").trim() || "";
+    console.log("content 纯文本:", contentText, "长度:", contentText.length);
+
+    if (!validateForm()) {
+      console.log("前端验证失败:", errors);
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -129,6 +158,8 @@ export function QuestionForm({
 
       const method = mode === "edit" ? "PUT" : "POST";
 
+      console.log("发送请求到:", url, "方法:", method);
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -136,17 +167,19 @@ export function QuestionForm({
       });
 
       const data = await res.json();
+      console.log("API 响应:", res.status, data);
 
       if (!res.ok) {
-        throw new Error(data.error || "保存失败");
+        throw new Error(data.error || data.details || "保存失败");
       }
 
       // 成功提示并跳转
-      alert(mode === "edit" ? "题目更新成功！" : "题目创建成功！");
+      showToast(mode === "edit" ? "题目更新成功！" : "题目创建成功！", "success");
       router.push("/dashboard/questions");
       router.refresh();
     } catch (error: any) {
-      alert(error.message || "保存失败，请重试");
+      console.error("提交错误:", error);
+      setApiError(error.message || "保存失败，请重试");
     } finally {
       setSubmitting(false);
     }
@@ -173,6 +206,38 @@ export function QuestionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* API 错误提示 */}
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+          <div className="flex-shrink-0 mt-0.5">
+            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-red-800">{apiError}</h3>
+            {apiError.includes("登录") && (
+              <p className="mt-1 text-sm text-red-600">
+                请先{" "}
+                <a href="/api/auth/signin" className="underline font-medium">
+                  登录
+                </a>{" "}
+                后再试。
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setApiError(null)}
+            className="flex-shrink-0 text-red-400 hover:text-red-600"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       {/* 基本信息 */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">基本信息</h2>
@@ -289,61 +354,41 @@ export function QuestionForm({
 
       {/* 题目内容 */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">题目内容</h2>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowPreview(!showPreview)}
-          >
-            {showPreview ? "编辑" : "预览"}
-          </Button>
-        </div>
+        <h2 className="text-lg font-semibold mb-4">题目内容</h2>
 
         {errors.content && (
           <p className="text-sm text-red-500 mb-2">{errors.content}</p>
         )}
 
-        {showPreview ? (
-          <div className="min-h-[200px] p-4 bg-gray-50 rounded-lg border prose prose-sm max-w-none">
-            {formData.content || <span className="text-gray-400">暂无内容</span>}
-          </div>
-        ) : (
-          <RichEditor
-            value={formData.content}
-            onChange={(value) => updateField("content", value)}
-            placeholder="请输入题目内容...
-            
+        <TiptapEditor
+          value={formData.content}
+          onChange={(value) => updateField("content", value)}
+          placeholder="请输入题目内容...
+
 示例：
 已知函数 f(x) = x² - 2ax + 3，当 x ∈ [1,3] 时，f(x) 的最小值为 2，求实数 a 的取值范围。"
-          />
-        )}
+        />
       </Card>
 
       {/* 答案 */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4">
-          答案 <span className="text-red-500">*</span>
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">
+            答案 <span className="text-red-500">*</span>
+          </h2>
+          <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+            {answerHint}
+          </span>
+        </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="answer">参考答案</Label>
-            <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-              {answerHint}
-            </span>
-          </div>
-          <textarea
-            id="answer"
+          <Label htmlFor="answer">参考答案</Label>
+          <TiptapSimpleEditor
             value={formData.answer}
-            onChange={(e) => updateField("answer", e.target.value)}
+            onChange={(value) => updateField("answer", value)}
             placeholder={answerHint}
             rows={formData.type === "COMPREHENSIVE" || formData.type === "CALCULATION" ? 6 : 3}
-            className={cn(
-              "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y",
-              errors.answer ? "border-red-500" : "border-gray-300"
-            )}
+            className={errors.answer ? "border-red-500" : ""}
           />
           {errors.answer && (
             <p className="text-sm text-red-500">{errors.answer}</p>
@@ -357,19 +402,29 @@ export function QuestionForm({
 
         <div className="space-y-2">
           <Label htmlFor="explanation">解题思路</Label>
-          <textarea
-            id="explanation"
+          <TiptapSimpleEditor
             value={formData.explanation || ""}
-            onChange={(e) => updateField("explanation", e.target.value)}
+            onChange={(value) => updateField("explanation", value)}
             placeholder="输入解题思路、关键步骤、涉及的知识点等..."
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
           />
           <p className="text-xs text-gray-500">
             AI 可以根据解题思路生成更详细的讲解视频或互动式讲解
           </p>
         </div>
       </Card>
+
+      {/* 全局错误提示 */}
+      {Object.keys(errors).length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h3 className="text-red-700 font-semibold mb-2">请完善以下信息：</h3>
+          <ul className="list-disc list-inside text-red-600 text-sm">
+            {Object.entries(errors).map(([field, message]) => (
+              <li key={field}>{message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* 提交按钮 */}
       <div className="flex gap-4 justify-end">

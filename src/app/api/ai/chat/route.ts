@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
       include: {
         child: {
           select: {
-            parentId: true,
-            name: true,
+            userId: true,
+            nickname: true,
             grade: true,
           },
         },
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "会话不存在" }, { status: 404 });
     }
 
-    if (chatSession.child.parentId !== session.user.id) {
+    if (chatSession.child.userId !== session.user.id) {
       return NextResponse.json({ error: "无权访问此会话" }, { status: 403 });
     }
 
@@ -76,8 +76,8 @@ export async function POST(request: NextRequest) {
     // 调用 AI 接口（这里需要替换为实际的 AI API）
     // 模拟 AI 回复
     const aiResponse = await simulateAIResponse(fullContext, {
-      childName: chatSession.child.name,
-      grade: chatSession.child.grade,
+      childName: chatSession.child.nickname,
+      grade: chatSession.child.grade || "未知",
     });
 
     // 保存 AI 回复
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
       where: { id: sessionId },
       include: {
         child: {
-          select: { parentId: true },
+          select: { userId: true },
         },
       },
     });
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "会话不存在" }, { status: 404 });
     }
 
-    if (chatSession.child.parentId !== session.user.id) {
+    if (chatSession.child.userId !== session.user.id) {
       return NextResponse.json({ error: "无权访问此会话" }, { status: 403 });
     }
 

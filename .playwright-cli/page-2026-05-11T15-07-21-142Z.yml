@@ -1,0 +1,78 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "语音评测" [level=1] [ref=e4]
+    - paragraph [ref=e5]: 练习英语口语，AI 智能评测发音、流畅度和准确度
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - heading "选择评测类型" [level=3] [ref=e10]:
+          - img [ref=e11]
+          - text: 选择评测类型
+        - generic [ref=e15]:
+          - button "📝 跟读句子 朗读指定的英语句子，练习发音和语调" [ref=e16] [cursor=pointer]:
+            - generic [ref=e17]:
+              - generic [ref=e18]: 📝
+              - generic [ref=e19]:
+                - generic [ref=e20]: 跟读句子
+                - generic [ref=e21]: 朗读指定的英语句子，练习发音和语调
+          - button "📄 朗读段落 朗读较长的英语段落，提升流畅度" [ref=e22] [cursor=pointer]:
+            - generic [ref=e23]:
+              - generic [ref=e24]: 📄
+              - generic [ref=e25]:
+                - generic [ref=e26]: 朗读段落
+                - generic [ref=e27]: 朗读较长的英语段落，提升流畅度
+          - button "🎤 自由表达 根据主题自由表达，锻炼口语能力" [ref=e28] [cursor=pointer]:
+            - generic [ref=e29]:
+              - generic [ref=e30]: 🎤
+              - generic [ref=e31]:
+                - generic [ref=e32]: 自由表达
+                - generic [ref=e33]: 根据主题自由表达，锻炼口语能力
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - heading "参考文本" [level=3] [ref=e37]:
+              - img [ref=e38]
+              - text: 参考文本
+            - generic [ref=e40]:
+              - button "换一篇" [ref=e41] [cursor=pointer]:
+                - img [ref=e42]
+                - text: 换一篇
+              - button "听发音" [ref=e47] [cursor=pointer]:
+                - img [ref=e48]
+                - text: 听发音
+          - paragraph [ref=e52]: 请朗读以下文本，注意发音和语调
+        - textbox "输入或选择要练习的文本..." [ref=e54]
+      - generic [ref=e55]:
+        - heading "录音练习" [level=3] [ref=e57]:
+          - img [ref=e58]
+          - text: 录音练习
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - generic [ref=e63]: 0:00
+            - generic [ref=e64]: 点击开始按钮进行录音
+          - button [ref=e66] [cursor=pointer]:
+            - img
+    - generic [ref=e70]:
+      - generic [ref=e71]:
+        - heading "评测结果" [level=3] [ref=e72]:
+          - img [ref=e73]
+          - text: 评测结果
+        - paragraph [ref=e75]: AI 评测您的发音、流畅度和准确度
+      - generic [ref=e77]:
+        - img [ref=e79]
+        - paragraph [ref=e82]: 完成录音后点击"开始评测"查看结果
+  - generic [ref=e83]:
+    - heading "使用提示" [level=3] [ref=e85]
+    - list [ref=e87]:
+      - listitem [ref=e88]:
+        - img [ref=e89]
+        - generic [ref=e92]: 请在安静的环境中进行录音，避免背景噪音影响评测结果
+      - listitem [ref=e93]:
+        - img [ref=e94]
+        - generic [ref=e97]: 录音时保持麦克风距离嘴部约 10-15 厘米，声音清晰即可
+      - listitem [ref=e98]:
+        - img [ref=e99]
+        - generic [ref=e102]: 点击"听发音"可以先听标准发音，再进行跟读练习
+      - listitem [ref=e103]:
+        - img [ref=e104]
+        - generic [ref=e107]: 评测结果仅供参考，持续练习才能不断提高口语水平

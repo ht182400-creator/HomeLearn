@@ -17,25 +17,24 @@ export default async function PracticePage() {
   const session = await getServerSession(authOptions);
 
   // 获取当前用户的孩子列表
-  const children = await prisma.child.findMany({
-    where: { parentId: session?.user?.id },
-    select: { id: true, name: true, grade: true },
+  const children = await prisma.childAccount.findMany({
+    where: { userId: session?.user?.id },
+    select: { id: true, nickname: true, grade: true },
   });
 
-  // 获取当前用户的科目列表
+  // 获取当前用户的科目列表（学科是公共数据，不需要 userId 筛选）
   const subjects = await prisma.subject.findMany({
-    where: { userId: session?.user?.id },
     select: { id: true, name: true, icon: true },
+    orderBy: { order: 'asc' },
   });
 
   // 获取最近练习记录
-  const recentSessions = await prisma.practiceSession.findMany({
+  const recentSessions = await prisma.practiceRecord.findMany({
     where: {
-      child: { parentId: session?.user?.id },
+      child: { userId: session?.user?.id },
     },
     include: {
-      child: { select: { id: true, name: true } },
-      subject: { select: { id: true, name: true, icon: true } },
+      child: { select: { id: true, nickname: true } },
     },
     orderBy: { createdAt: "desc" },
     take: 5,
@@ -84,20 +83,20 @@ export default async function PracticePage() {
                     className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-sm">{s.child.name}</span>
+                      <span className="font-medium text-sm">{s.child.nickname}</span>
                       <span className={cn(
                         "px-2 py-0.5 rounded text-xs",
-                        s.status === "COMPLETED"
+                        s.completedAt
                           ? "bg-green-100 text-green-700"
                           : "bg-yellow-100 text-yellow-700"
                       )}>
-                        {s.status === "COMPLETED" ? "已完成" : "进行中"}
+                        {s.completedAt ? "已完成" : "进行中"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span>{s.subject.icon} {s.subject.name}</span>
-                      {s.status === "COMPLETED" && (
-                        <span className="text-green-600 font-medium">{s.accuracy}%</span>
+                      <span>{s.type}</span>
+                      {s.score && (
+                        <span className="text-green-600 font-medium">{s.score}%</span>
                       )}
                     </div>
                     <div className="text-xs text-gray-400 mt-1">

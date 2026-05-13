@@ -1,0 +1,9 @@
+- generic [active]:
+  - alert [ref=e1]
+  - dialog "Failed to compile" [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Failed to compile" [level=4] [ref=e7]
+      - generic [ref=e8]:
+        - generic [ref=e10]: "./src/lib/stores/auth-store.ts:1:0 Module not found: Can't resolve 'zustand' > 1 | import { create } from 'zustand'; 2 | 3 | interface Child { 4 | id: string; https://nextjs.org/docs/messages/module-not-found Import trace for requested module: ./src/app/dashboard/chat/page.tsx"
+        - contentinfo [ref=e11]:
+          - paragraph [ref=e12]: This error occurred during the build process and can only be dismissed by fixing the error.

@@ -9,7 +9,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold">家学 HomeLearn</span>
+            <span className="text-xl font-bold">甜家学 HomeLearn</span>
           </div>
           <nav className="flex items-center gap-6">
             <Link href="/login" className="text-sm font-medium hover:text-primary">
@@ -58,7 +58,7 @@ export default function Home() {
       <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            为什么选择家学？
+            为什么选择甜家学？
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <FeatureCard
@@ -142,7 +142,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-8 border-t">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>© 2024 家学 HomeLearn. 数据私有，亲子共学。</p>
+          <p>© 2024 甜家学 HomeLearn. 数据私有，亲子共学。</p>
           <p className="mt-2">Made with ❤️ for families</p>
         </div>
       </footer>

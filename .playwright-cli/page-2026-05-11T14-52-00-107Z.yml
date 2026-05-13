@@ -1,0 +1,70 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "练习中心" [level=1] [ref=e4]
+      - paragraph [ref=e5]: 创建练习任务，开始学习之旅
+    - generic [ref=e6]:
+      - generic [ref=e8]:
+        - heading "创建新练习" [level=2] [ref=e9]
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - generic [ref=e12]: 选择孩子 *
+            - button "小 小明 PRIMARY_3" [ref=e14] [cursor=pointer]:
+              - generic [ref=e15]:
+                - generic [ref=e16]: 小
+                - generic [ref=e17]:
+                  - generic [ref=e18]: 小明
+                  - generic [ref=e19]: PRIMARY_3
+          - generic [ref=e20]:
+            - generic [ref=e21]: 选择科目 *
+            - generic [ref=e22]:
+              - button "📚 数学" [ref=e23] [cursor=pointer]:
+                - generic [ref=e24]: 📚
+                - generic [ref=e25]: 数学
+              - button "📚 英语" [ref=e26] [cursor=pointer]:
+                - generic [ref=e27]: 📚
+                - generic [ref=e28]: 英语
+              - button "📚 语文" [ref=e29] [cursor=pointer]:
+                - generic [ref=e30]: 📚
+                - generic [ref=e31]: 语文
+              - button "📚 物理" [ref=e32] [cursor=pointer]:
+                - generic [ref=e33]: 📚
+                - generic [ref=e34]: 物理
+              - button "📚 化学" [ref=e35] [cursor=pointer]:
+                - generic [ref=e36]: 📚
+                - generic [ref=e37]: 化学
+          - generic [ref=e38]:
+            - text: 练习来源
+            - generic [ref=e39]:
+              - button "🎲 随机练习 从题库随机抽取" [ref=e40] [cursor=pointer]:
+                - generic [ref=e41]: 🎲
+                - generic [ref=e42]: 随机练习
+                - generic [ref=e43]: 从题库随机抽取
+              - button "📕 错题本 针对错题练习" [ref=e44] [cursor=pointer]:
+                - generic [ref=e45]: 📕
+                - generic [ref=e46]: 错题本
+                - generic [ref=e47]: 针对错题练习
+              - button "🔄 复习模式 艾宾浩斯复习" [ref=e48] [cursor=pointer]:
+                - generic [ref=e49]: 🔄
+                - generic [ref=e50]: 复习模式
+                - generic [ref=e51]: 艾宾浩斯复习
+              - button "🤖 AI推荐 AI智能推荐" [ref=e52] [cursor=pointer]:
+                - generic [ref=e53]: 🤖
+                - generic [ref=e54]: AI推荐
+                - generic [ref=e55]: AI智能推荐
+          - generic [ref=e56]:
+            - text: 题目数量
+            - generic [ref=e57]:
+              - slider [ref=e58]: "10"
+              - generic [ref=e59]: 10 题
+          - button "开始练习" [disabled]
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - heading "最近练习" [level=2] [ref=e63]
+          - link "查看全部" [ref=e64] [cursor=pointer]:
+            - /url: /dashboard/practice/history
+        - generic [ref=e65]:
+          - generic [ref=e66]: 📝
+          - paragraph [ref=e67]: 暂无练习记录
+          - paragraph [ref=e68]: 开始创建第一个练习吧
+  - alert [ref=e69]

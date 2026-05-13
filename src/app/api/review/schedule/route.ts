@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 验证孩子账户归属
-    const child = await prisma.child.findFirst({
+    const child = await prisma.childAccount.findFirst({
       where: {
         id: childId,
         userId: session.user.id,
@@ -42,10 +42,10 @@ export async function GET(request: NextRequest) {
     const reviewQuestions = await prisma.wrongQuestion.findMany({
       where: {
         childId,
-        nextReviewDate: {
+        nextReview: {
           lte: today,
         },
-        isMastered: false,
+        mastered: false,
       },
       include: {
         question: {
@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: [
-        { priority: "desc" },
-        { nextReviewDate: "asc" },
+        { reviewCount: "asc" },
+        { nextReview: "asc" },
       ],
       take: limit,
     });
@@ -77,14 +77,11 @@ export async function GET(request: NextRequest) {
           id: q.id,
           questionId: q.questionId,
           content: q.question.content,
-          options: q.question.options,
-          questionType: q.question.questionType,
-          correctAnswer: q.question.correctAnswer,
+          answer: q.question.answer,
           subject: q.question.subject.name,
           difficulty: q.question.difficulty,
           reviewCount: q.reviewCount,
-          priority: q.priority,
-          memoryLevel: getMemoryLevel(q.reviewCount),
+          masteryLevel: getMemoryLevel(q.reviewCount),
         })),
         stats,
       },

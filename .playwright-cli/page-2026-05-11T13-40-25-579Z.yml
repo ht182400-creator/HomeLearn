@@ -1,0 +1,36 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e98]
+  - generic [ref=e100]:
+    - generic [ref=e101]:
+      - img [ref=e103]
+      - heading "创建账户" [level=3] [ref=e106]
+      - paragraph [ref=e107]: 立即开始，为您的家庭打造专属学习平台
+    - generic [ref=e108]:
+      - generic [ref=e109]:
+        - generic [ref=e122]: 该邮箱已被注册
+        - generic [ref=e110]:
+          - text: 邮箱
+          - textbox "邮箱" [ref=e111]:
+            - /placeholder: your@email.com
+            - text: test@example.com
+        - generic [ref=e112]:
+          - text: 用户名
+          - textbox "用户名" [ref=e113]:
+            - /placeholder: 选择一个用户名
+            - text: testuser
+        - generic [ref=e114]:
+          - text: 密码
+          - textbox "密码" [ref=e115]:
+            - /placeholder: 至少6个字符
+            - text: Test123456
+        - generic [ref=e116]:
+          - text: 确认密码
+          - textbox "确认密码" [ref=e117]:
+            - /placeholder: 再次输入密码
+            - text: Test123456
+      - generic [ref=e118]:
+        - button "注册" [ref=e119] [cursor=pointer]
+        - paragraph [ref=e120]:
+          - text: 已有账户？
+          - link "立即登录" [ref=e121] [cursor=pointer]:
+            - /url: /login

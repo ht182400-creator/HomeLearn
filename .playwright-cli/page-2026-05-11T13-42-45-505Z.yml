@@ -1,0 +1,29 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e25]
+  - generic [ref=e218]:
+    - banner [ref=e219]:
+      - generic [ref=e221]:
+        - link [ref=e222] [cursor=pointer]:
+          - /url: /dashboard
+          - button [ref=e223]:
+            - img [ref=e224]
+        - heading "孩子账户管理" [level=1] [ref=e226]
+    - main [ref=e227]:
+      - button "添加孩子" [ref=e250] [cursor=pointer]:
+        - img [ref=e251]
+        - text: 添加孩子
+      - generic [ref=e254]:
+        - generic [ref=e256]:
+          - img [ref=e258]
+          - generic [ref=e261]:
+            - heading "小明" [level=3] [ref=e262]
+            - paragraph [ref=e263]: 小学三年级
+        - generic [ref=e264]:
+          - link "查看错题" [ref=e265] [cursor=pointer]:
+            - /url: /dashboard/review?child=cmp194jsg000j9jw18k011bc7
+            - button "查看错题" [ref=e266]
+          - generic [ref=e267]:
+            - button [ref=e268] [cursor=pointer]:
+              - img [ref=e269]
+            - button [ref=e271] [cursor=pointer]:
+              - img [ref=e272]

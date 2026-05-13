@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const where: any = {
       // 关联孩子所属用户必须是当前登录用户
       child: {
-        parentId: session.user.id,
+        userId: session.user.id,
       },
       ...filters,
     };
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         child: {
-          select: { id: true, name: true, avatar: true },
+          select: { id: true, nickname: true, avatar: true },
         },
         subject: {
           select: { id: true, name: true, icon: true },
@@ -103,10 +103,10 @@ export async function POST(request: NextRequest) {
     const validatedData = CreatePracticeSessionSchema.parse(body);
 
     // 验证孩子归属
-    const child = await prisma.child.findFirst({
+    const child = await prisma.childAccount.findFirst({
       where: {
         id: validatedData.childId,
-        parentId: session.user.id,
+        userId: session.user.id,
       },
     });
 

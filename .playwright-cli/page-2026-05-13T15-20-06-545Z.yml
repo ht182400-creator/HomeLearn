@@ -1,0 +1,165 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e34]
+  - generic [ref=e35]:
+    - banner [ref=e36]:
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - link "甜家学" [ref=e40] [cursor=pointer]:
+            - /url: /
+            - img [ref=e42]
+            - generic [ref=e45]: 甜家学
+          - generic [ref=e46]:
+            - img [ref=e47]
+            - generic [ref=e49]: 控制台
+        - generic [ref=e50]:
+          - button [ref=e52] [cursor=pointer]:
+            - img [ref=e53]
+          - generic [ref=e56]:
+            - generic [ref=e58]: T
+            - generic [ref=e59]: test1
+          - button "退出" [ref=e61] [cursor=pointer]:
+            - img [ref=e62]
+            - text: 退出
+    - main [ref=e65]:
+      - generic [ref=e70]:
+        - generic [ref=e71]:
+          - img [ref=e73]
+          - heading "欢迎回来，test1" [level=1] [ref=e75]
+        - paragraph [ref=e76]: 管理您的家庭学习平台，用 AI 陪伴孩子成长每一步
+      - generic [ref=e77]:
+        - link "孩子账户 2" [ref=e78] [cursor=pointer]:
+          - /url: /dashboard/children
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - paragraph [ref=e84]: 孩子账户
+              - paragraph [ref=e85]: "2"
+            - img [ref=e87]
+        - link "题目总数 7" [ref=e92] [cursor=pointer]:
+          - /url: /dashboard/questions
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - paragraph [ref=e98]: 题目总数
+              - paragraph [ref=e99]: "7"
+            - img [ref=e101]
+        - link "错题待复习 --" [ref=e104] [cursor=pointer]:
+          - /url: /dashboard/review
+          - generic [ref=e108]:
+            - generic [ref=e109]:
+              - paragraph [ref=e110]: 错题待复习
+              - paragraph [ref=e111]: "--"
+            - img [ref=e113]
+        - link "本周练习 --" [ref=e117] [cursor=pointer]:
+          - /url: /dashboard/reports
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - paragraph [ref=e123]: 本周练习
+              - paragraph [ref=e124]: "--"
+            - img [ref=e126]
+      - generic [ref=e129]:
+        - generic [ref=e130]:
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - img [ref=e134]
+              - heading "孩子账户" [level=2] [ref=e139]
+            - link "添加" [ref=e140] [cursor=pointer]:
+              - /url: /dashboard/children
+              - button "添加" [ref=e141]:
+                - img [ref=e142]
+                - text: 添加
+          - generic [ref=e143]:
+            - img [ref=e145]
+            - generic [ref=e150]:
+              - paragraph [ref=e151]: 已管理 2 位学员
+              - paragraph [ref=e152]: 点击右上角可继续添加
+        - generic [ref=e153]:
+          - generic [ref=e154]:
+            - generic [ref=e155]:
+              - img [ref=e157]
+              - heading "错题集" [level=2] [ref=e160]
+            - link "添加" [ref=e161] [cursor=pointer]:
+              - /url: /dashboard/questions
+              - button "添加" [ref=e162]:
+                - img [ref=e163]
+                - text: 添加
+          - generic [ref=e164]:
+            - generic [ref=e165]:
+              - generic [ref=e166]:
+                - generic [ref=e167]:
+                  - generic [ref=e168]: "01"
+                  - generic [ref=e169]: 漂浮法测密度
+                - generic [ref=e170]: 物理
+              - generic [ref=e171]:
+                - generic [ref=e172]:
+                  - generic [ref=e173]: "02"
+                  - generic [ref=e174]: 八年级下浮力综合
+                - generic [ref=e175]: 物理
+              - generic [ref=e176]:
+                - generic [ref=e177]:
+                  - generic [ref=e178]: "03"
+                  - generic [ref=e179]: 找出不同类型的词语
+                - generic [ref=e180]: 英语
+              - generic [ref=e181]:
+                - generic [ref=e182]:
+                  - generic [ref=e183]: "04"
+                  - generic [ref=e184]: 选择合适的选项完成对话
+                - generic [ref=e185]: 英语
+              - generic [ref=e186]:
+                - generic [ref=e187]:
+                  - generic [ref=e188]: "05"
+                  - generic [ref=e189]: 看图选短语
+                - generic [ref=e190]: 英语
+              - generic [ref=e191]:
+                - generic [ref=e192]:
+                  - generic [ref=e193]: "06"
+                  - generic [ref=e194]: 如图所示，水平地面上有一个底面积为200cm2 的盛水容器A
+                - generic [ref=e195]: 物理
+            - link "查看全部 7 道错题" [ref=e197] [cursor=pointer]:
+              - /url: /dashboard/questions
+              - text: 查看全部 7 道错题
+              - img [ref=e198]
+      - generic [ref=e200]:
+        - generic [ref=e201]:
+          - img [ref=e203]
+          - generic [ref=e206]:
+            - heading "学科概览" [level=2] [ref=e207]
+            - paragraph [ref=e208]: 点击查看各科题目
+        - generic [ref=e209]:
+          - link "数学" [ref=e210] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=MATH
+            - img [ref=e212]
+            - text: 数学
+          - link "英语" [ref=e215] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=ENGLISH
+            - img [ref=e217]
+            - text: 英语
+          - link "语文" [ref=e220] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=CHINESE
+            - img [ref=e222]
+            - text: 语文
+          - link "物理" [ref=e225] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=PHYSICS
+            - img [ref=e227]
+            - text: 物理
+          - link "化学" [ref=e230] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=CHEMISTRY
+            - img [ref=e232]
+            - text: 化学
+      - generic [ref=e240]:
+        - generic [ref=e241]:
+          - img [ref=e243]
+          - generic [ref=e253]:
+            - heading "AI 智能功能" [level=2] [ref=e254]
+            - paragraph [ref=e255]: 智能辅助，让学习更高效
+        - generic [ref=e256]:
+          - generic [ref=e257]:
+            - img [ref=e260]
+            - heading "AI 智能问答" [level=3] [ref=e270]
+            - paragraph [ref=e271]: 拍照即识别，AI 详细讲解每道题
+          - generic [ref=e272]:
+            - img [ref=e275]
+            - heading "薄弱点诊断" [level=3] [ref=e279]
+            - paragraph [ref=e280]: 基于错题数据，精准定位知识盲区
+          - generic [ref=e281]:
+            - img [ref=e284]
+            - heading "英语口语评测" [level=3] [ref=e287]
+            - paragraph [ref=e288]: 音素级评测，标准发音示范

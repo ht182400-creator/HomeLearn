@@ -1,0 +1,40 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "学习目标" [level=1] [ref=e6]:
+        - img [ref=e7]
+        - text: 学习目标
+      - paragraph [ref=e11]: 设定目标，追踪成长
+    - generic [ref=e12]:
+      - combobox [ref=e13] [cursor=pointer]:
+        - generic: 选择孩子
+        - img [ref=e14]
+      - combobox [ref=e16]
+      - button "新建目标" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+        - text: 新建目标
+  - generic [ref=e19]:
+    - generic [ref=e22]:
+      - img [ref=e24]
+      - generic [ref=e26]:
+        - paragraph [ref=e27]: 进行中
+        - paragraph [ref=e28]: "0"
+    - generic [ref=e31]:
+      - img [ref=e33]
+      - generic [ref=e39]:
+        - paragraph [ref=e40]: 已完成
+        - paragraph [ref=e41]: "0"
+    - generic [ref=e44]:
+      - img [ref=e46]
+      - generic [ref=e50]:
+        - paragraph [ref=e51]: 总计
+        - paragraph [ref=e52]: "0"
+  - generic [ref=e53]:
+    - heading "进行中 0" [level=3] [ref=e55]:
+      - img [ref=e56]
+      - text: 进行中
+      - generic [ref=e59]: "0"
+    - generic [ref=e61]:
+      - img [ref=e62]
+      - paragraph [ref=e66]: 暂无进行中的目标
+      - paragraph [ref=e67]: 点击右上角按钮创建新目标

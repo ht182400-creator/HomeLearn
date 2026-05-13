@@ -1,0 +1,45 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - link [ref=e6] [cursor=pointer]:
+          - /url: /dashboard
+          - button [ref=e7]:
+            - img [ref=e8]
+        - heading "孩子账户管理" [level=1] [ref=e10]
+    - main [ref=e11]:
+      - generic [ref=e17]:
+        - heading "添加新孩子" [level=3] [ref=e19]
+        - generic [ref=e21]:
+          - generic [ref=e22]:
+            - text: 昵称
+            - textbox "昵称" [ref=e23]:
+              - /placeholder: 例如：小明
+              - text: 小明
+          - generic [ref=e24]:
+            - text: 年级
+            - combobox "年级" [active] [ref=e25]:
+              - option "请选择年级" [selected]
+              - option "小学一年级"
+              - option "小学二年级"
+              - option "小学三年级"
+              - option "小学四年级"
+              - option "小学五年级"
+              - option "小学六年级"
+              - option "初一"
+              - option "初二"
+              - option "初三"
+              - option "高一"
+              - option "高二"
+              - option "高三"
+          - generic [ref=e26]:
+            - button "添加" [ref=e27] [cursor=pointer]
+            - button "取消" [ref=e28] [cursor=pointer]
+      - generic [ref=e29]:
+        - img [ref=e30]
+        - heading "还没有添加孩子" [level=3] [ref=e33]
+        - paragraph [ref=e34]: 添加孩子账户，开始管理他们的学习
+        - button "添加第一个孩子" [ref=e35] [cursor=pointer]:
+          - img [ref=e36]
+          - text: 添加第一个孩子
+  - alert [ref=e37]

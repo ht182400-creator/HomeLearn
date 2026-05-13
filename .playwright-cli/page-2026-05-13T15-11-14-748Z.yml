@@ -1,0 +1,28 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img [ref=e7]
+    - heading "欢迎来到甜家学" [level=3] [ref=e10]
+    - paragraph [ref=e11]: 家长账户登录
+  - generic [ref=e13]:
+    - button "我是家长" [ref=e14] [cursor=pointer]:
+      - img [ref=e15]
+      - text: 我是家长
+    - button "我是孩子" [ref=e20] [cursor=pointer]:
+      - img [ref=e21]
+      - text: 我是孩子
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - text: 用户名 / 邮箱
+        - textbox "用户名 / 邮箱" [ref=e27]:
+          - /placeholder: 请输入用户名或邮箱
+      - generic [ref=e28]:
+        - text: 密码
+        - textbox "密码" [ref=e29]:
+          - /placeholder: 请输入密码
+    - generic [ref=e30]:
+      - button "登录" [ref=e31] [cursor=pointer]
+      - paragraph [ref=e32]:
+        - text: 还没有账户？
+        - link "立即注册" [ref=e33] [cursor=pointer]:
+          - /url: /register

@@ -1,0 +1,9 @@
+- generic [active]:
+  - alert [ref=e1]
+  - dialog "Failed to compile" [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Failed to compile" [level=4] [ref=e7]
+      - generic [ref=e8]:
+        - generic [ref=e10]: "./src/app/dashboard/chat/page.tsx:16:0 Module not found: Can't resolve '@/components/ui/badge' 14 | import { Card, CardContent, CardHeader, CardTitle } from \"@/components/ui/card\"; 15 | import { Button } from \"@/components/ui/button\"; > 16 | import { Badge } from \"@/components/ui/badge\"; 17 | import { 18 | Select, 19 | SelectContent, https://nextjs.org/docs/messages/module-not-found"
+        - contentinfo [ref=e11]:
+          - paragraph [ref=e12]: This error occurred during the build process and can only be dismissed by fixing the error.

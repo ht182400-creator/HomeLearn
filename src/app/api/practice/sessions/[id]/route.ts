@@ -18,12 +18,12 @@ export async function GET(
       where: {
         id: params.id,
         child: {
-          parentId: session.user.id,
+          userId: session.user.id,
         },
       },
       include: {
         child: {
-          select: { id: true, name: true, avatar: true },
+          select: { id: true, nickname: true, avatar: true },
         },
         subject: {
           select: { id: true, name: true, icon: true },
@@ -73,7 +73,7 @@ export async function PATCH(
       where: {
         id: params.id,
         child: {
-          parentId: session.user.id,
+          userId: session.user.id,
         },
       },
     });
@@ -113,7 +113,7 @@ export async function DELETE(
       where: {
         id: params.id,
         child: {
-          parentId: session.user.id,
+          userId: session.user.id,
         },
       },
     });

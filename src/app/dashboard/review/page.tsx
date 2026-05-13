@@ -21,14 +21,17 @@ import {
   Brain,
   Calendar,
   TrendingUp,
+  Home,
+  ArrowLeft,
+  Send,
+  Play,
+  List,
 } from "lucide-react";
 
 interface Child {
   id: string;
-  name: string;
-  grade: {
-    name: string;
-  };
+  nickname: string;
+  grade: string;
 }
 
 interface ReviewStats {
@@ -46,6 +49,7 @@ export default function ReviewPage() {
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingStats, setLoadingStats] = useState(false);
+  const [pushing, setPushing] = useState(false);
 
   // 加载孩子列表
   useEffect(() => {
@@ -53,7 +57,12 @@ export default function ReviewPage() {
       try {
         const res = await fetch("/api/children");
         const data = await res.json();
-        if (data.success) {
+        if (Array.isArray(data)) {
+          setChildren(data);
+          if (data.length > 0 && !selectedChildId) {
+            setSelectedChildId(data[0].id);
+          }
+        } else if (data.success && data.data) {
           setChildren(data.data);
           if (data.data.length > 0 && !selectedChildId) {
             setSelectedChildId(data.data[0].id);
@@ -92,10 +101,48 @@ export default function ReviewPage() {
     router.push(`/dashboard/review/${selectedChildId}`);
   };
 
+  const handlePushToStudent = async () => {
+    if (!selectedChildId || !stats?.totalToReview) return;
+
+    setPushing(true);
+    try {
+      const res = await fetch("/api/review/push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          childId: selectedChildId,
+          taskType: "REVIEW",
+          description: `今日复习任务：${stats.totalToReview} 道错题待复习`,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("已成功推送给学生！学生端将收到复习提醒。");
+      } else {
+        alert(data.error || "推送失败，请重试");
+      }
+    } catch (error) {
+      console.error("推送失败:", error);
+      alert("推送失败，请重试");
+    } finally {
+      setPushing(false);
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       {/* 页面标题 */}
       <div className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Button variant="outline" size="sm" onClick={() => router.back()} className="gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            返回
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => router.push("/dashboard")} className="gap-1">
+            <Home className="h-4 w-4" />
+            返回主页
+          </Button>
+        </div>
         <h1 className="text-3xl font-bold flex items-center gap-3">
           <Brain className="h-8 w-8 text-primary" />
           错题复习
@@ -118,7 +165,7 @@ export default function ReviewPage() {
             <SelectContent>
               {children.map((child) => (
                 <SelectItem key={child.id} value={child.id}>
-                  {child.name} - {child.grade.name}
+                  {child.nickname} - {child.grade || "未设置年级"}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -213,19 +260,63 @@ export default function ReviewPage() {
             <div className="text-center md:text-left">
               <h3 className="font-semibold text-lg">开始今日复习</h3>
               <p className="text-sm text-muted-foreground">
-                {stats?.totalToReview ? `还有 ${stats.totalToReview} 道题目等待复习` : "请先选择学习账户"}
+                {!selectedChildId
+                  ? "请先选择学习账户"
+                  : stats?.totalToReview
+                  ? `还有 ${stats.totalToReview} 道题目等待复习`
+                  : "今日暂无需要复习的题目，继续保持！"}
               </p>
+              {/* 优化：显示更多信息 */}
+              {stats && !stats.totalToReview && (stats.wrong + stats.mastered > 0) && (
+                <p className="text-xs text-green-600 mt-1">
+                  🎉 太棒了！{stats.mastered} 道题已掌握，继续保持
+                </p>
+              )}
             </div>
-            <Button
-              size="lg"
-              onClick={handleStartReview}
-              disabled={!selectedChildId || !stats?.totalToReview || loading}
-              className="gap-2"
-            >
-              {loading ? "加载中..." : "开始复习"}
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* 家长辅助复习 */}
+              <Button
+                size="lg"
+                onClick={handleStartReview}
+                disabled={!selectedChildId || !stats?.totalToReview || loading}
+                className="gap-2"
+                title={!stats?.totalToReview ? "暂没有需要复习的题目" : ""}
+              >
+                <Play className="h-5 w-5" />
+                {loading ? "加载中..." : "开始复习"}
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              {/* 推送给学生 */}
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={handlePushToStudent}
+                disabled={!selectedChildId || !stats?.totalToReview || pushing}
+                className="gap-2"
+                title={!stats?.totalToReview ? "暂没有需要复习的题目" : ""}
+              >
+                <Send className="h-5 w-5" />
+                {pushing ? "推送中..." : "推送给学生"}
+              </Button>
+              {/* 查看全部错题 */}
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => router.push("/dashboard/wrong-questions")}
+                disabled={!selectedChildId || (stats && stats.wrong === 0 && stats.mastered === 0)}
+                className="gap-2"
+                title="查看所有易错题和已掌握题"
+              >
+                <List className="h-5 w-5" />
+                查看全部错题
+              </Button>
+            </div>
           </div>
+          <p className="text-xs text-muted-foreground mt-3 text-center md:text-left">
+            <span className="text-primary font-medium">开始复习</span>：家长和孩子一起在线做题 &nbsp;|&nbsp;
+            <span className="text-primary font-medium">推送给学生</span>：发送复习任务，学生在学生端完成 &nbsp;|&nbsp;
+            <span className="text-primary font-medium">查看全部错题</span>：管理所有易错题和已掌握题
+          </p>
         </CardContent>
       </Card>
 

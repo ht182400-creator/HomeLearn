@@ -1,0 +1,37 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "学习报告" [level=1] [ref=e4]:
+      - img [ref=e5]
+      - text: 学习报告
+    - paragraph [ref=e7]: 追踪学习进度，分析薄弱环节
+  - generic [ref=e8]:
+    - heading "选择学习账户" [level=3] [ref=e10]
+    - generic [ref=e11]:
+      - combobox [ref=e12] [cursor=pointer]:
+        - generic: 请选择孩子账户
+        - img [ref=e13]
+      - combobox [ref=e15]
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - heading "生成报告" [level=3] [ref=e18]:
+        - img [ref=e19]
+        - text: 生成报告
+      - paragraph [ref=e20]: 选择报告类型，系统将自动统计学习数据
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - text: 报告类型
+        - combobox [ref=e24] [cursor=pointer]:
+          - img [ref=e25]
+        - combobox [ref=e27]
+      - generic [ref=e28]:
+        - button "生成报告" [disabled]:
+          - img
+          - text: 生成报告
+  - generic [ref=e29]:
+    - heading "历史报告" [level=3] [ref=e31]:
+      - img [ref=e32]
+      - text: 历史报告
+    - generic [ref=e35]:
+      - img [ref=e36]
+      - paragraph [ref=e39]: 暂无学习报告
+      - paragraph [ref=e40]: 完成练习后即可生成学习报告

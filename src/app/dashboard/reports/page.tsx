@@ -31,12 +31,14 @@ import {
   ChevronRight,
   Calendar,
   CheckCircle2,
+  Home,
+  ArrowLeft,
 } from "lucide-react";
 
 interface Child {
   id: string;
-  name: string;
-  grade: { name: string };
+  nickname: string;
+  grade: string;
 }
 
 interface Report {
@@ -76,7 +78,12 @@ export default function ReportsPage() {
       try {
         const res = await fetch("/api/children");
         const data = await res.json();
-        if (data.success) {
+        if (Array.isArray(data)) {
+          setChildren(data);
+          if (data.length > 0) {
+            setSelectedChildId(data[0].id);
+          }
+        } else if (data.success && data.data) {
           setChildren(data.data);
           if (data.data.length > 0) {
             setSelectedChildId(data.data[0].id);
@@ -116,24 +123,45 @@ export default function ReportsPage() {
         );
         const data = await res.json();
         if (data.success && data.data.reports.length > 0) {
-          const reports = data.data.reports;
-          const totalPractice = reports.length;
-          const totalQuestions = reports.reduce(
+          const reportsList = data.data.reports;
+          
+          // 从报告记录中聚合真实数据
+          // totalPractice: 练习次数（从 summary 字段中提取，或取最新一条报告的数据）
+          let totalPractice = 0;
+          const totalQuestions = reportsList.reduce(
             (sum: number, r: Report) => sum + r.totalQuestions,
             0
           );
-          const totalCorrect = reports.reduce(
+          const totalCorrect = reportsList.reduce(
             (sum: number, r: Report) => sum + r.correctQuestions,
             0
           );
-          const totalTime = reports.reduce(
+          const totalTime = reportsList.reduce(
             (sum: number, r: Report) => sum + (r.totalPracticeTime || 0),
             0
           );
-          const masteredCount = reports.reduce(
+          const masteredCount = reportsList.reduce(
             (sum: number, r: Report) => sum + (r.masteredQuestions || 0),
             0
           );
+
+          // 尝试从最新报告的 summary 中提取练习次数（更准确）
+          // 如果报告中包含 practiceCount 信息，优先使用
+          for (const r of reportsList) {
+            if (r.summary && typeof r.summary === 'string') {
+              // summary 格式如："本周学习报告：共完成 N 次练习..."
+              const match = r.summary.match(/共完成\s*(\d+)\s*次练习/);
+              if (match) {
+                totalPractice = Math.max(totalPractice, parseInt(match[1], 10));
+              }
+            }
+          }
+          
+          // 如果没从 summary 提取到，则用完成的任务/会话数估算
+          if (totalPractice === 0 && totalQuestions > 0) {
+            // 没有精确的练习次数时，至少显示有题目完成
+            totalPractice = reportsList.filter(r => r.totalQuestions > 0).length;
+          }
 
           setSummary({
             totalPractice,
@@ -141,6 +169,15 @@ export default function ReportsPage() {
             avgAccuracy: totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0,
             totalTime,
             masteredCount,
+          });
+        } else {
+          // 没有报告数据时，重置为空或零
+          setSummary({
+            totalPractice: 0,
+            totalQuestions: 0,
+            avgAccuracy: 0,
+            totalTime: 0,
+            masteredCount: 0,
           });
         }
       } catch (error) {
@@ -218,6 +255,16 @@ export default function ReportsPage() {
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       {/* 页面标题 */}
       <div className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Button variant="outline" size="sm" onClick={() => router.back()} className="gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            返回
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => router.push("/dashboard")} className="gap-1">
+            <Home className="h-4 w-4" />
+            返回主页
+          </Button>
+        </div>
         <h1 className="text-3xl font-bold flex items-center gap-3">
           <BarChart3 className="h-8 w-8 text-primary" />
           学习报告
@@ -240,7 +287,7 @@ export default function ReportsPage() {
             <SelectContent>
               {children.map((child) => (
                 <SelectItem key={child.id} value={child.id}>
-                  {child.name} - {child.grade.name}
+                  {child.nickname} - {child.grade || '未设置年级'}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -389,7 +436,7 @@ export default function ReportsPage() {
                 <TableRow>
                   <TableHead>报告类型</TableHead>
                   <TableHead>时间范围</TableHead>
-                  <TableHead className="text-center">练习次数</TableHead>
+                  <TableHead className="text-center">完成题目</TableHead>
                   <TableHead className="text-center">正确率</TableHead>
                   <TableHead className="text-center">掌握</TableHead>
                   <TableHead className="text-right">操作</TableHead>

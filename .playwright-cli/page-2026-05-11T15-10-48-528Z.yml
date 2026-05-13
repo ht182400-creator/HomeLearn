@@ -1,0 +1,13 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link [ref=e6] [cursor=pointer]:
+        - /url: /dashboard
+        - button [ref=e7]:
+          - img [ref=e8]
+      - heading "孩子账户管理" [level=1] [ref=e10]
+  - main [ref=e11]:
+    - button "添加孩子" [ref=e12] [cursor=pointer]:
+      - img [ref=e13]
+      - text: 添加孩子
+    - img [ref=e15]

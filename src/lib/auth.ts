@@ -1,11 +1,11 @@
-import NextAuth from 'next-auth';
+import { NextAuthOptions, getServerSession } from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/db';
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma) as any,
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/login',
@@ -68,4 +68,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-});
+};
+
+// V4 兼容：auth() 函数
+export const auth = () => getServerSession(authOptions);

@@ -10,6 +10,8 @@ export const QuestionTypeEnum = z.enum([
   "CALCULATION",      // 计算题
   "PROOF",            // 证明题
   "COMPREHENSIVE",    // 综合题
+  "FREE_RESPONSE",    // 解答题（PDF导入使用）
+  "OTHER",            // 其他题型（PDF导入使用）
 ]);
 
 export type QuestionType = z.infer<typeof QuestionTypeEnum>;
@@ -25,11 +27,11 @@ export type Difficulty = z.infer<typeof DifficultyEnum>;
 
 // 创建题目验证
 export const CreateQuestionSchema = z.object({
-  // 题目内容（支持 Markdown）
+  // 题目内容（支持 Markdown，含 Base64 图片）
   content: z
     .string()
     .min(1, "题目内容不能为空")
-    .max(10000, "题目内容过长"),
+    .max(500000, "题目内容过长，请压缩或减少图片数量"),
 
   // 题目类型
   type: QuestionTypeEnum,
@@ -37,23 +39,32 @@ export const CreateQuestionSchema = z.object({
   // 科目 ID
   subjectId: z.string().min(1, "请选择科目"),
 
-  // 年级 ID
-  gradeId: z.string().min(1, "请选择年级"),
+  // 年级 ID（可选）
+  gradeId: z.string().optional(),
 
-  // 难度
-  difficulty: DifficultyEnum.default("MEDIUM"),
+  // 孩子账户 ID（可选）
+  childId: z.string().optional(),
 
-  // 答案（格式根据题目类型不同）
-  answer: z.string().min(1, "答案不能为空"),
+  // 难度 (1-5 数字 或 EASY/MEDIUM/HARD 字符串)
+  difficulty: z.union([
+    z.coerce.number().min(1).max(5),
+    DifficultyEnum
+  ]).default(3),
 
-  // 解析（可选）
-  explanation: z.string().optional(),
+  // 答案（格式根据题目类型不同，含 Base64 图片）
+  answer: z
+    .string()
+    .min(1, "答案不能为空")
+    .max(500000, "答案过长，请压缩或减少图片数量"),
+
+  // 解析（可选，含 Base64 图片）
+  explanation: z
+    .string()
+    .max(500000, "解析过长，请压缩或减少图片数量")
+    .optional(),
 
   // 知识点标签（可选，逗号分隔）
   tags: z.string().optional(),
-
-  // 关联的孩子 ID（可选，用于个性化题目）
-  childId: z.string().optional(),
 });
 
 // 更新题目验证
@@ -72,10 +83,9 @@ export const BatchCreateQuestionSchema = z.object({
 // 题目查询验证
 export const QueryQuestionsSchema = z.object({
   subjectId: z.string().optional(),
-  gradeId: z.string().optional(),
   type: QuestionTypeEnum.optional(),
-  difficulty: DifficultyEnum.optional(),
-  childId: z.string().optional(),
+  difficulty: z.coerce.number().min(1).max(5).optional(),
+  grade: z.string().optional(),
   keyword: z.string().optional(),
   page: z.coerce.number().min(1).default(1),
   pageSize: z.coerce.number().min(1).max(100).default(20),
@@ -84,12 +94,10 @@ export const QueryQuestionsSchema = z.object({
 // AI 生成题目验证
 export const AIGenerateQuestionSchema = z.object({
   subjectId: z.string().min(1, "请选择科目"),
-  gradeId: z.string().min(1, "请选择年级"),
   type: QuestionTypeEnum.optional(),
   difficulty: DifficultyEnum.optional(),
   count: z.coerce.number().min(1).max(10).default(5),
   topic: z.string().optional(), // 指定知识点
-  childId: z.string().optional(),
 });
 
 // 类型到答案格式映射说明
@@ -102,6 +110,8 @@ export const QuestionTypeLabels: Record<QuestionType, string> = {
   CALCULATION: "计算题",
   PROOF: "证明题",
   COMPREHENSIVE: "综合题",
+  FREE_RESPONSE: "解答题",
+  OTHER: "其他",
 };
 
 // 难度标签

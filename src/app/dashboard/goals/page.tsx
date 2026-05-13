@@ -203,7 +203,7 @@ export default function GoalsPage() {
               <SelectContent>
                 {children.map((child) => (
                   <SelectItem key={child.id} value={child.id}>
-                    {child.name}
+                    {child.nickname}
                   </SelectItem>
                 ))}
               </SelectContent>

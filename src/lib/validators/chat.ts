@@ -14,6 +14,7 @@ export const SendMessageSchema = z.object({
   sessionId: z.string().min(1, "会话ID不能为空"),
   content: z.string().min(1, "消息内容不能为空").max(2000, "消息内容不能超过2000字符"),
   childId: z.string().min(1, "孩子ID不能为空"),
+  subject: z.string().optional(),
 });
 
 export type SendMessageInput = z.infer<typeof SendMessageSchema>;

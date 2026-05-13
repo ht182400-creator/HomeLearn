@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 验证孩子账户归属
-    const child = await prisma.child.findFirst({
+    const child = await prisma.childAccount.findFirst({
       where: { id: childId, userId: session.user.id },
     });
 

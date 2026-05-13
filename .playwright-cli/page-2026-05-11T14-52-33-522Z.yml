@@ -1,0 +1,45 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "错题复习" [level=1] [ref=e4]:
+      - img [ref=e5]
+      - text: 错题复习
+    - paragraph [ref=e15]: 基于艾宾浩斯遗忘曲线，科学安排复习时间
+  - generic [ref=e16]:
+    - heading "选择学习账户" [level=3] [ref=e18]
+    - generic [ref=e19]:
+      - combobox [ref=e20] [cursor=pointer]:
+        - generic: 请选择孩子账户
+        - img [ref=e21]
+      - combobox [ref=e23]
+  - generic [ref=e26]:
+    - generic [ref=e27]:
+      - heading "开始今日复习" [level=3] [ref=e28]
+      - paragraph [ref=e29]: 请先选择学习账户
+    - button "开始复习" [disabled]:
+      - text: 开始复习
+      - img
+  - generic [ref=e30]:
+    - heading "复习时间表" [level=3] [ref=e32]:
+      - img [ref=e33]
+      - text: 复习时间表
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - paragraph [ref=e38]: 第1天
+          - paragraph [ref=e39]: 初次学习
+        - generic [ref=e40]:
+          - paragraph [ref=e41]: 第2天
+          - paragraph [ref=e42]: 第1次复习
+        - generic [ref=e43]:
+          - paragraph [ref=e44]: 第4天
+          - paragraph [ref=e45]: 第2次复习
+        - generic [ref=e46]:
+          - paragraph [ref=e47]: 第7天
+          - paragraph [ref=e48]: 第3次复习
+        - generic [ref=e49]:
+          - paragraph [ref=e50]: 第15天
+          - paragraph [ref=e51]: 第4次复习
+        - generic [ref=e52]:
+          - paragraph [ref=e53]: 第30天
+          - paragraph [ref=e54]: 第5次复习
+      - paragraph [ref=e55]: 按照艾宾浩斯遗忘曲线科学复习，5次正确后即可完全掌握！

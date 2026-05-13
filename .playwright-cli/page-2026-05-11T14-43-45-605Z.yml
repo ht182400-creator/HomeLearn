@@ -1,0 +1,120 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e21]
+  - generic [ref=e22]:
+    - banner [ref=e23]:
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - link "甜家学" [ref=e27] [cursor=pointer]:
+            - /url: /
+            - img [ref=e28]
+            - generic [ref=e31]: 甜家学
+          - generic [ref=e32]: "|"
+          - generic [ref=e33]: 控制台
+        - generic [ref=e34]:
+          - generic [ref=e35]: demo123@test.com
+          - button "退出" [ref=e37] [cursor=pointer]:
+            - img [ref=e38]
+            - text: 退出
+    - main [ref=e41]:
+      - generic [ref=e42]:
+        - heading "欢迎回来，demo123" [level=1] [ref=e43]
+        - paragraph [ref=e44]: 管理您的家庭学习平台，陪伴孩子成长
+      - generic [ref=e45]:
+        - link "孩子账户 1" [ref=e46] [cursor=pointer]:
+          - /url: /dashboard/children
+          - generic [ref=e48]:
+            - generic [ref=e49]:
+              - paragraph [ref=e50]: 孩子账户
+              - paragraph [ref=e51]: "1"
+            - img [ref=e53]
+        - link "题目总数 0" [ref=e58] [cursor=pointer]:
+          - /url: /dashboard/questions
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - paragraph [ref=e62]: 题目总数
+              - paragraph [ref=e63]: "0"
+            - img [ref=e65]
+        - link "错题待复习 --" [ref=e68] [cursor=pointer]:
+          - /url: /dashboard/review
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - paragraph [ref=e72]: 错题待复习
+              - paragraph [ref=e73]: "--"
+            - img [ref=e75]
+        - link "本周练习 --" [ref=e79] [cursor=pointer]:
+          - /url: /dashboard/report
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - paragraph [ref=e83]: 本周练习
+              - paragraph [ref=e84]: "--"
+            - img [ref=e86]
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - heading "孩子账户" [level=2] [ref=e91]:
+              - img [ref=e92]
+              - text: 孩子账户
+            - link "添加" [ref=e97] [cursor=pointer]:
+              - /url: /dashboard/children
+              - button "添加" [ref=e98]:
+                - img [ref=e99]
+                - text: 添加
+          - paragraph [ref=e100]: 已添加 1 个孩子账户
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - heading "题目管理" [level=2] [ref=e103]:
+              - img [ref=e104]
+              - text: 题目管理
+            - link "添加" [ref=e107] [cursor=pointer]:
+              - /url: /dashboard/questions
+              - button "添加" [ref=e108]:
+                - img [ref=e109]
+                - text: 添加
+          - generic [ref=e110]:
+            - img [ref=e111]
+            - paragraph [ref=e114]: 还没有录入题目
+            - link "录入第一道题" [ref=e115] [cursor=pointer]:
+              - /url: /dashboard/questions
+              - button "录入第一道题" [ref=e116]
+      - generic [ref=e117]:
+        - heading "学科概览" [level=2] [ref=e118]:
+          - img [ref=e119]
+          - text: 学科概览
+        - generic [ref=e122]:
+          - link "数学" [ref=e123] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=MATH
+            - img [ref=e125]
+            - text: 数学
+          - link "英语" [ref=e128] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=ENGLISH
+            - img [ref=e130]
+            - text: 英语
+          - link "语文" [ref=e133] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=CHINESE
+            - img [ref=e135]
+            - text: 语文
+          - link "物理" [ref=e138] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=PHYSICS
+            - img [ref=e140]
+            - text: 物理
+          - link "化学" [ref=e143] [cursor=pointer]:
+            - /url: /dashboard/questions?subject=CHEMISTRY
+            - img [ref=e145]
+            - text: 化学
+      - generic [ref=e148]:
+        - heading "AI 智能功能" [level=2] [ref=e149]:
+          - img [ref=e150]
+          - text: AI 智能功能
+        - generic [ref=e160]:
+          - generic [ref=e161]:
+            - img [ref=e162]
+            - heading "AI 智能问答" [level=3] [ref=e172]
+            - paragraph [ref=e173]: 拍照即识别，AI 详细讲解每道题
+          - generic [ref=e174]:
+            - img [ref=e175]
+            - heading "薄弱点诊断" [level=3] [ref=e179]
+            - paragraph [ref=e180]: 基于错题数据，精准定位知识盲区
+          - generic [ref=e181]:
+            - img [ref=e182]
+            - heading "英语口语评测" [level=3] [ref=e185]
+            - paragraph [ref=e186]: 音素级评测，标准发音示范

@@ -1,0 +1,97 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "几何画板" [level=1] [ref=e4]
+    - paragraph [ref=e5]: 绘制几何图形，辅助数学学习
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - heading "工具栏" [level=3] [ref=e9]
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: 选择与绘图
+          - generic [ref=e13]:
+            - button "选择 (V)" [ref=e14] [cursor=pointer]:
+              - img [ref=e15]
+            - button "点 (P)" [ref=e17] [cursor=pointer]:
+              - img [ref=e18]
+            - button "线段 (L)" [ref=e20] [cursor=pointer]:
+              - img [ref=e21]
+            - button "直线 (I)" [ref=e22] [cursor=pointer]:
+              - img [ref=e23]
+            - button "射线 (R)" [ref=e24] [cursor=pointer]:
+              - img [ref=e25]
+        - generic [ref=e30]:
+          - generic [ref=e31]: 高级工具
+          - generic [ref=e32]:
+            - button "圆 (C)" [ref=e33] [cursor=pointer]:
+              - img [ref=e34]
+            - button "多边形 (G)" [ref=e36] [cursor=pointer]:
+              - img [ref=e37]
+            - button "角度 (A)" [ref=e39] [cursor=pointer]:
+              - img [ref=e40]
+            - button "测量 (M)" [ref=e42] [cursor=pointer]:
+              - img [ref=e43]
+            - button "文字 (T)" [ref=e48] [cursor=pointer]:
+              - img [ref=e49]
+        - generic [ref=e51]:
+          - generic [ref=e52]: 视图
+          - generic [ref=e53]:
+            - button [ref=e54] [cursor=pointer]:
+              - img [ref=e55]
+            - generic [ref=e58]: 100%
+            - button [ref=e59] [cursor=pointer]:
+              - img [ref=e60]
+          - generic [ref=e63]:
+            - button "网格" [ref=e64] [cursor=pointer]:
+              - img [ref=e65]
+              - text: 网格
+            - button "标签" [ref=e67] [cursor=pointer]:
+              - img [ref=e68]
+              - text: 标签
+        - generic [ref=e70]:
+          - generic [ref=e71]: 操作
+          - generic [ref=e72]:
+            - button "测量选中" [ref=e73] [cursor=pointer]:
+              - img [ref=e74]
+              - text: 测量选中
+            - button "删除选中" [disabled]:
+              - img
+              - text: 删除选中
+            - button "清空画布" [ref=e79] [cursor=pointer]:
+              - img [ref=e80]
+              - text: 清空画布
+    - generic [ref=e83]:
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - heading "画布" [level=3] [ref=e88]
+          - paragraph [ref=e89]: "当前工具: 选择 | 图形数量: 0"
+        - generic [ref=e90]:
+          - button "预设模板" [ref=e91] [cursor=pointer]:
+            - img [ref=e92]
+            - text: 预设模板
+          - button "导出图片" [ref=e95] [cursor=pointer]:
+            - img [ref=e96]
+            - text: 导出图片
+      - generic [ref=e102]:
+        - heading "使用说明" [level=3] [ref=e104]:
+          - img [ref=e105]
+          - text: 使用说明
+        - list [ref=e109]:
+          - listitem [ref=e110]: • 点击预设模板快速创建常见几何图形
+          - listitem [ref=e111]: • 选中图形后可拖动调整位置
+          - listitem [ref=e112]: • 使用测量工具可计算线段长度、圆的周长和面积
+          - listitem [ref=e113]: • 点击网格按钮可显示/隐藏辅助网格
+          - listitem [ref=e114]: • 点击标签按钮可显示/隐藏图形标签
+          - listitem [ref=e115]: • 导出图片后可保存或打印
+    - generic [ref=e116]:
+      - heading "颜色" [level=3] [ref=e118]:
+        - img [ref=e119]
+        - text: 颜色
+      - generic [ref=e126]:
+        - button "黑色" [ref=e127] [cursor=pointer]
+        - button "红色" [ref=e128] [cursor=pointer]
+        - button "蓝色" [ref=e129] [cursor=pointer]
+        - button "绿色" [ref=e130] [cursor=pointer]
+        - button "黄色" [ref=e131] [cursor=pointer]
+        - button "紫色" [ref=e132] [cursor=pointer]
+        - button "粉色" [ref=e133] [cursor=pointer]
+        - button "青色" [ref=e134] [cursor=pointer]

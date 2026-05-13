@@ -1,0 +1,53 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - heading "AI 学习助手" [level=1] [ref=e6]:
+        - img [ref=e7]
+        - text: AI 学习助手
+      - paragraph [ref=e9]: 随时随地，有问必答
+    - combobox [ref=e10] [cursor=pointer]:
+      - generic: 选择孩子
+      - img [ref=e11]
+    - combobox [ref=e13]
+  - generic [ref=e14]:
+    - button "📐 数学辅导 点击开始" [disabled] [ref=e15]:
+      - generic [ref=e16]: 📐
+      - heading "数学辅导" [level=3] [ref=e17]
+      - paragraph [ref=e18]: 点击开始
+    - button "📖 英语学习 点击开始" [disabled] [ref=e19]:
+      - generic [ref=e20]: 📖
+      - heading "英语学习" [level=3] [ref=e21]
+      - paragraph [ref=e22]: 点击开始
+    - button "📚 语文答疑 点击开始" [disabled] [ref=e23]:
+      - generic [ref=e24]: 📚
+      - heading "语文答疑" [level=3] [ref=e25]
+      - paragraph [ref=e26]: 点击开始
+    - button "💡 综合问答 点击开始" [disabled] [ref=e27]:
+      - generic [ref=e28]: 💡
+      - heading "综合问答" [level=3] [ref=e29]
+      - paragraph [ref=e30]: 点击开始
+  - generic [ref=e31]:
+    - heading "AI 助手功能" [level=3] [ref=e33]:
+      - img [ref=e34]
+      - text: AI 助手功能
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - heading "📐 数学辅导" [level=4] [ref=e40]
+        - paragraph [ref=e41]: 解答数学问题，提供解题思路，引导思考
+      - generic [ref=e42]:
+        - heading "📖 英语学习" [level=4] [ref=e43]
+        - paragraph [ref=e44]: 单词记忆，语法讲解，口语练习
+      - generic [ref=e45]:
+        - heading "📝 作业答疑" [level=4] [ref=e46]
+        - paragraph [ref=e47]: 辅导作业，解释概念，提供练习
+  - generic [ref=e48]:
+    - generic [ref=e49]:
+      - heading "历史会话" [level=3] [ref=e50]:
+        - img [ref=e51]
+        - text: 历史会话
+      - generic [ref=e53]: 0 个会话
+    - generic [ref=e55]:
+      - img [ref=e56]
+      - paragraph [ref=e58]: 暂无历史会话
+      - paragraph [ref=e59]: 点击上方卡片开始新的对话吧
+  - paragraph [ref=e61]: 💡 提示：AI 助手会引导孩子思考，而不是直接给出答案

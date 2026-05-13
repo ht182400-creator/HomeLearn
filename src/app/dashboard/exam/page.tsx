@@ -154,9 +154,9 @@ export default function ExamGeneratorPage() {
               <div>
                 <label className="block text-sm font-medium mb-2">题型</label>
                 <Select
-                  value={config.questionTypes[0]}
+                  value={config.questionTypes[0] || 'choice'}
                   onValueChange={(value: 'choice' | 'fill' | 'solve') => {
-                    setConfig(prev => ({ ...prev, questionTypes: [value] }));
+                    setConfig(prev => ({ ...prev, questionTypes: [value] as typeof prev.questionTypes }));
                   }}
                 >
                   <SelectTrigger>

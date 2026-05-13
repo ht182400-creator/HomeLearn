@@ -131,7 +131,7 @@ export default function KnowledgeGraphPage() {
       ctx.strokeStyle = style.color;
       ctx.lineWidth = 2;
       if (style.dashArray) {
-        ctx.setLineDash(style.dashArray.split(',').map(Number));
+        ctx.setLineDash(style.dashArray.split(',').map(Number) as number[]);
       } else {
         ctx.setLineDash([]);
       }

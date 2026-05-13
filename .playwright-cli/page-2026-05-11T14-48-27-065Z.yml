@@ -1,0 +1,25 @@
+- dialog "Unhandled Runtime Error" [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - navigation [ref=e7]:
+          - button "previous" [disabled] [ref=e8]:
+            - img "previous" [ref=e9]
+          - button "next" [disabled] [ref=e11]:
+            - img "next" [ref=e12]
+          - generic [ref=e14]: 1 of 1 unhandled error
+          - generic [ref=e15]:
+            - text: Next.js (14.1.0) is outdated
+            - link "(learn more)" [ref=e17] [cursor=pointer]:
+              - /url: https://nextjs.org/docs/messages/version-staleness
+        - button "Close" [ref=e18] [cursor=pointer]:
+          - img [ref=e20]
+      - heading "Unhandled Runtime Error" [level=1] [ref=e23]
+      - paragraph [ref=e24]: "Error: Cannot read properties of undefined (reading 'findMany')"
+    - generic [ref=e25]:
+      - heading "Source" [level=2] [ref=e26]
+      - generic [ref=e27]:
+        - link "src\\app\\dashboard\\practice\\page.tsx (20:38) @ findMany" [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: src\app\dashboard\practice\page.tsx (20:38) @ findMany
+          - img [ref=e31]
+        - generic [ref=e35]: "18 | 19 | // 获取当前用户的孩子列表 > 20 | const children = await prisma.child.findMany({ | ^ 21 | where: { parentId: session?.user?.id }, 22 | select: { id: true, name: true, grade: true }, 23 | });"

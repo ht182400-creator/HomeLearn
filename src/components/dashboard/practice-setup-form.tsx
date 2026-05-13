@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 
 interface Child {
   id: string;
-  name: string;
+  nickname: string;
   grade?: { name: string } | null;
 }
 
@@ -108,12 +108,12 @@ export function PracticeSetupForm({ children, subjects }: PracticeSetupFormProps
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                  {child.name.charAt(0)}
+                  {child.nickname.charAt(0)}
                 </div>
                 <div>
-                  <div className="font-medium">{child.name}</div>
+                  <div className="font-medium">{child.nickname}</div>
                   {child.grade && (
-                    <div className="text-xs text-gray-500">{child.grade.name}</div>
+                    <div className="text-xs text-gray-500">{child.grade}</div>
                   )}
                 </div>
               </div>

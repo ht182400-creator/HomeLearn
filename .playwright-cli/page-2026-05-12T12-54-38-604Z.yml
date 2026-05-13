@@ -1,0 +1,16 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link [ref=e6] [cursor=pointer]:
+        - /url: /dashboard/questions
+        - button [ref=e7]:
+          - img [ref=e8]
+      - heading "推送记录" [level=1] [ref=e10]
+  - main [ref=e11]:
+    - generic [ref=e12]:
+      - button "全部 (0)" [ref=e13]
+      - button "待完成 (0)" [ref=e14]
+      - button "待确认 (0)" [ref=e15]
+      - button "已完成 (0)" [ref=e16]
+      - button "已逾期 (0)" [ref=e17]
+    - img [ref=e19]
