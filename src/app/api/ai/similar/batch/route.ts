@@ -20,11 +20,18 @@ const SIMILAR_QUESTION_PROMPT = `你是一个专业的题目设计专家。请�
 3. 答案和解析要完整准确
 4. 如果原题有多个小问，变式题应尽量保持相同的结构
 
+【重要】JSON格式要求：
+- 只返回纯JSON，不要包裹 markdown 代码块
+- content 内容中的 HTML 标签必须转义：< 转为 \\u003c，> 转为 \\u003e
+- 换行使用 \\n，不要使用 <br> 或 <p> 标签
+- 双引号 " 转为 \\"
+- 这样确保返回的 JSON 可以被标准 JSON.parse() 解析
+
 请按以下JSON格式返回结果（只返回JSON，不要其他内容）：
 {{
   "questions": [
     {{
-      "content": "题目内容（富文本格式，支持HTML标签）",
+      "content": "题目内容（用\\n表示换行，HTML标签需转义如\\u003cbr\\u003e）",
       "answer": "答案",
       "analysis": "解题思路分析"
     }}
@@ -44,29 +51,84 @@ const SIMILAR_QUESTION_PROMPT = `你是一个专业的题目设计专家。请�
  * 在 JSON 字符串值中（双引号内），真实的换行需要被替换为 \\n 字面量
  */
 function fixJsonStringNewlines(jsonStr: string): string {
-  return jsonStr.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, (match, content) => {
-    const fixed = content.replace(/\n/g, '\\n').replace(/\r/g, '');
+  let result = jsonStr;
+  
+  // 策略1：处理 HTML 内容中的 <br> 标签（转为 \n）
+  result = result.replace(/<br\s*\/?>/gi, '\\n');
+  
+  // 策略2：处理 <p></p> 标签内的换行
+  result = result.replace(/<\/p>\s*/gi, '\\n');
+  
+  // 策略3：处理双引号内的内容
+  result = result.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, (match, content) => {
+    let fixed = content.replace(/\r\n/g, '\\n').replace(/\n/g, '\\n').replace(/\r/g, '');
+    fixed = fixed.replace(/&nbsp;/g, ' ');
+    fixed = fixed.replace(/&lt;/g, '<');
+    fixed = fixed.replace(/&gt;/g, '>');
+    fixed = fixed.replace(/&amp;/g, '&');
+    fixed = fixed.replace(/&quot;/g, '"');
     return `"${fixed}"`;
   });
+  
+  return result;
+}
+
+/**
+ * 深度清理 JSON 字符串中的非法字符
+ */
+function deepCleanJson(jsonStr: string): string {
+  let result = jsonStr;
+  result = result.replace(/^\uFEFF/, '');
+  result = result.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+  result = result.replace(/^ +"/gm, '"');
+  result = result.replace(/" +$/gm, '"');
+  result = result.replace(/'([^']*)'/g, (match, content) => {
+    return `"${content.replace(/"/g, '\\"')}"`;
+  });
+  return result;
 }
 
 /**
  * 备用解析：从非标准文本中提取 questions 数组
- * 使用正则尝试提取每道题目的关键信息
+ * 使用正则尝试提取每道题目的关键信息，支持 HTML 内容
  */
 function extractQuestionsFromText(text: string) {
   const questions: Array<{content: string; answer: string; analysis?: string}> = [];
   
-  // 尝试匹配 content/answer 模式
-  const qPattern = /(?:题目|content|题干)[：:]\s*([\s\S]*?)(?:答案|answer)[：:]\s*([\s\S]*?)(?=(?:解析|analysis|题目|content|题干)|$)/gi;
+  // 清理 HTML 标签，保留文本内容
+  const cleanText = text
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"');
   
+  // 策略1：匹配标准 JSON 的 questions 数组项
+  const jsonPattern = /"content"\s*:\s*"(.*?)"\s*,\s*"answer"\s*:\s*"(.*?)"(?:\s*,\s*"analysis"\s*:\s*"(.*?)")?/gi;
   let match;
-  while ((match = qPattern.exec(text)) !== null) {
-    if (match[1] && match[1].trim().length > 5 && match[2] && match[2].trim().length > 0) {
+  while ((match = jsonPattern.exec(cleanText)) !== null) {
+    if (match[1] && match[1].trim().length > 0 && match[2] && match[2].trim().length > 0) {
       questions.push({
-        content: match[1].trim(),
-        answer: match[2].trim(),
+        content: match[1].replace(/\\n/g, '\n').trim(),
+        answer: match[2].replace(/\\n/g, '\n').trim(),
+        analysis: match[3] ? match[3].replace(/\\n/g, '\n').trim() : undefined,
       });
+    }
+  }
+  
+  // 策略2：如果没找到，尝试匹配 content/answer 模式
+  if (questions.length === 0) {
+    const qPattern = /(?:题目|content|题干)[：:]\s*([\s\S]*?)(?:答案|answer)[：:]\s*([\s\S]*?)(?=(?:解析|analysis|题目|content|题干)|$)/gi;
+    while ((match = qPattern.exec(cleanText)) !== null) {
+      if (match[1] && match[1].trim().length > 5 && match[2] && match[2].trim().length > 0) {
+        questions.push({
+          content: match[1].trim(),
+          answer: match[2].trim(),
+        });
+      }
     }
   }
 
@@ -75,6 +137,7 @@ function extractQuestionsFromText(text: string) {
     return { questions: [] };
   }
 
+  console.log(`[Similar] 备用解析成功提取 ${questions.length} 道题目`);
   return { questions };
 }
 
@@ -178,16 +241,15 @@ async function generateSimilarForQuestion(
       }
 
       // Step 3: 清洗常见问题字符
-      // - 替换单引号为双引号（如果整体看起来像单引号 JSON）
-      // - 修复未转义的换行符（在字符串值内）
-      // - 移除可能的 BOM 和控制字符
+      // - 移除 BOM 和控制字符
+      // - 深度清理非法字符
+      aiContent = deepCleanJson(aiContent);
       aiContent = aiContent
-        .replace(/^\uFEFF/, '')  // 移除 BOM
-        .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, '')  // 移除控制字符
+        .replace(/^\uFEFF/, '')
+        .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, '')
         .trim();
 
-      // Step 4: 尝试修复常见的 JSON 格式问题
-      // 修复字符串内未转义的换行符（用 \n 字面替换）
+      // Step 4: 修复字符串内未转义的换行符和 HTML 标签
       aiContent = fixJsonStringNewlines(aiContent);
 
       parsedContent = JSON.parse(aiContent);
