@@ -9,10 +9,16 @@ import {
   ArrowRight,
   Send,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  EyeOff,
+  Eye,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 
 /**
@@ -44,6 +50,23 @@ interface Task {
   questionCount: number;
   allowSkip: boolean;
   questions: Question[];
+  childId?: string;  // 关联的孩子ID
+}
+
+/**
+ * 变式题数据结构
+ */
+interface SimilarQuestion {
+  id: string;
+  content: any;
+  answer: any;
+  analysis: any;
+  status: string;
+  originalQuestion: {
+    id: string;
+    content: any;
+    subject: { name: string };
+  };
 }
 
 export default function TaskPracticePage() {
@@ -63,9 +86,44 @@ export default function TaskPracticePage() {
   // 用户的答案
   const [answers, setAnswers] = useState<Record<string, any>>({});
 
+  // 变式题相关状态
+  const [similarQuestions, setSimilarQuestions] = useState<SimilarQuestion[]>([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [showSimilarPanel, setShowSimilarPanel] = useState(false);
+  const [selectedSimilarIndex, setSelectedSimilarIndex] = useState<number | null>(null);
+  // 变式题作答：key 为 `${sqId}_${qIndex}`，值为答案（字符串或字符串数组）
+  const [similarAnswers, setSimilarAnswers] = useState<Record<string, any>>({});
+  // 是否显示变式题答案/解析
+  const [showSimilarResult, setShowSimilarResult] = useState(false);
+
   useEffect(() => {
     fetchTask();
   }, [taskId]);
+
+  /**
+   * 获取当前题目的变式题
+   * @param questionId 当前题目ID
+   * @param childId 孩子账户ID
+   */
+  const fetchSimilarQuestions = async (questionId: string, childId: string) => {
+    setLoadingSimilar(true);
+    try {
+      // 查询该原题下、该孩子的所有已完成变式题
+      const res = await fetch(`/api/ai/similar?questionId=${questionId}&childId=${childId}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        // 只获取已完成且有有效内容的变式题（content.questions 存在且非空）
+        const validQuestions = data.data.filter(
+          (sq: SimilarQuestion) => sq.status === 'COMPLETED' && sq.content?.questions && sq.content.questions.length > 0
+        );
+        setSimilarQuestions(validQuestions);
+      }
+    } catch (error) {
+      console.error('获取变式题失败:', error);
+    } finally {
+      setLoadingSimilar(false);
+    }
+  };
 
   const fetchTask = async () => {
     try {
@@ -87,8 +145,21 @@ export default function TaskPracticePage() {
     setCompletedQuestions(prev => new Set([...prev, currentIndex]));
   };
 
+  /**
+   * 处理变式题作答
+   * @param sqId 变式题记录 ID
+   * @param qIndex 题目索引（同一变式题组内的第几题）
+   * @param answer 学生答案
+   */
+  const handleSimilarAnswer = (sqId: string, qIndex: number, answer: any) => {
+    const key = `${sqId}_${qIndex}`;
+    setSimilarAnswers(prev => ({ ...prev, [key]: answer }));
+  };
+
   const goToQuestion = (index: number) => {
     setCurrentIndex(index);
+    // 切换题目时重置变式题选择
+    setSelectedSimilarIndex(null);
   };
 
   const handleSubmit = async () => {
@@ -203,6 +274,34 @@ export default function TaskPracticePage() {
         {/* 题目导航 */}
         <Card className="mb-6">
           <CardContent className="pt-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-muted-foreground">点击题号切换题目</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (currentQuestion && task.childId) {
+                    // 从任务数据获取 childId
+                    fetchSimilarQuestions(currentQuestion.id, task.childId);
+                    setShowSimilarPanel(!showSimilarPanel);
+                  }
+                }}
+                disabled={!currentQuestion || loadingSimilar || !task.childId}
+                className="gap-1.5 text-violet-600 border-violet-200 hover:bg-violet-50"
+              >
+                {loadingSimilar ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                举一反三
+                {similarQuestions.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {similarQuestions.length}
+                  </Badge>
+                )}
+              </Button>
+            </div>
             <div className="flex flex-wrap gap-2">
               {task.questions.map((q, index) => (
                 <button
@@ -247,16 +346,25 @@ export default function TaskPracticePage() {
 
             {/* 题目类型 */}
             <div className="text-sm text-muted-foreground mb-4">
-              题型：{currentQuestion?.type === 'SINGLE_CHOICE' ? '单选题' : 
-                    currentQuestion?.type === 'MULTIPLE_CHOICE' ? '多选题' :
-                    currentQuestion?.type === 'TRUE_FALSE' ? '判断题' :
-                    currentQuestion?.type === 'FILL_BLANK' ? '填空题' :
-                    currentQuestion?.type === 'SHORT_ANSWER' ? '简答题' : '解答题'}
+              题型：{
+                currentQuestion?.type === 'SINGLE_CHOICE' ? '单选题' :
+                currentQuestion?.type === 'MULTIPLE_CHOICE' ? '多选题' :
+                currentQuestion?.type === 'TRUE_FALSE' ? '判断题' :
+                currentQuestion?.type === 'FILL_BLANK' ? '填空题' :
+                currentQuestion?.type === 'SHORT_ANSWER' ? '简答题' :
+                currentQuestion?.type === 'CALCULATION' ? '计算题' :
+                currentQuestion?.type === 'PROOF' ? '证明题' :
+                currentQuestion?.type === 'COMPREHENSIVE' ? '综合题' :
+                currentQuestion?.type === 'FREE_RESPONSE' ? '解答题' :
+                currentQuestion?.type === 'COMPOSITION' ? '作文' :
+                currentQuestion?.type === 'READING' ? '阅读理解' :
+                currentQuestion?.type === 'LISTENING' ? '听力题' : '其他题型'
+              }
             </div>
 
             {/* 答案区域 - 简化的作答界面 */}
             <div className="space-y-4">
-              {/* 选择题选项 */}
+              {/* 单选题/判断题 - 单选按钮 */}
               {(currentQuestion?.type === 'SINGLE_CHOICE' || currentQuestion?.type === 'TRUE_FALSE') && (
                 <div className="space-y-2">
                   {(() => {
@@ -285,11 +393,106 @@ export default function TaskPracticePage() {
                 </div>
               )}
 
-              {/* 填空题/简答题 */}
-              {(currentQuestion?.type === 'FILL_BLANK' || currentQuestion?.type === 'SHORT_ANSWER' || currentQuestion?.type === 'CALCULATION') && (
+              {/* 多选题 - 多选按钮（带复选框） */}
+              {currentQuestion?.type === 'MULTIPLE_CHOICE' && (
+                <div className="space-y-3">
+                  {/* 提示：多选 */}
+                  <p className="text-sm text-amber-600 font-medium flex items-center gap-1">
+                    <span>◆</span> 多选题（可选择多个答案）
+                  </p>
+                  {(() => {
+                    const options = currentQuestion.metadata?.options;
+                    
+                    // 如果没有 metadata.options，不渲染选项按钮，让用户用文本框作答
+                    if (!options || options.length === 0) {
+                      return (
+                        <textarea
+                          className="w-full p-4 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none min-h-[120px] resize-none"
+                          placeholder="请选择答案后输入（如：AB、ABC）..."
+                          value={answers[currentQuestion.id] || ''}
+                          onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
+                        />
+                      );
+                    }
+
+                    // 当前已选中的多选答案
+                    const selected = (answers[currentQuestion.id] as string[]) || [];
+                    
+                    const toggleOption = (label: string) => {
+                      let newSelected: string[];
+                      if (selected.includes(label)) {
+                        newSelected = selected.filter(s => s !== label);
+                      } else {
+                        newSelected = [...selected, label];
+                      }
+                      handleAnswer(currentQuestion.id, newSelected.sort());
+                    };
+
+                    return options.map((option) => {
+                      const isSelected = selected.includes(option.label);
+                      return (
+                        <button
+                          key={option.label}
+                          onClick={() => toggleOption(option.label)}
+                          className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
+                            isSelected
+                              ? 'border-violet-500 bg-violet-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          {/* 复选框 + 标签 + 内容 */}
+                          <div className="flex items-start gap-3">
+                            {/* 复选框图标 */}
+                            <span className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center mt-0.5 ${
+                              isSelected 
+                                ? 'border-violet-500 bg-violet-500 text-white'
+                                : 'border-gray-300'
+                            }`}>
+                              {isSelected && (
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </span>
+                            <span className="font-bold mr-1 text-lg">{option.label}</span>
+                            <span dangerouslySetInnerHTML={{ __html: option.content }} />
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
+
+                  {/* 显示当前已选 */}
+                  {answers[currentQuestion.id] && (
+                    <p className="text-sm text-violet-600 font-medium pl-2">
+                      已选：{
+                        Array.isArray(answers[currentQuestion.id])
+                          ? (answers[currentQuestion.id] as string[]).join('、')
+                          : answers[currentQuestion.id] as string
+                      }
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* 需要文本输入的题型：填空题、简答题、计算题、证明题、综合题、解答题、作文、阅读理解、听力、其他 */}
+              {['FILL_BLANK', 'SHORT_ANSWER', 'CALCULATION', 'PROOF', 'COMPREHENSIVE', 'FREE_RESPONSE', 'COMPOSITION', 'READING', 'LISTENING', 'OTHER'].includes(currentQuestion?.type || '') && (
                 <textarea
                   className="w-full p-4 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none min-h-[120px] resize-none"
-                  placeholder="请输入你的答案..."
+                  placeholder={(() => {
+                    switch (currentQuestion?.type) {
+                      case 'FILL_BLANK': return '请输入填空答案...';
+                      case 'SHORT_ANSWER': return '请简述你的答案...';
+                      case 'CALCULATION': return '请写出计算过程和答案...';
+                      case 'PROOF': return '请写出证明过程...';
+                      case 'COMPREHENSIVE': return '请详细解答...';
+                      case 'FREE_RESPONSE': return '请写出解答过程...';
+                      case 'COMPOSITION': return '请在此写作文...';
+                      case 'READING': return '请回答阅读理解问题...';
+                      case 'LISTENING': return '请回答听力问题...';
+                      default: return '请输入你的答案...';
+                    }
+                  })()}
                   value={answers[currentQuestion.id] || ''}
                   onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
                 />
@@ -360,6 +563,229 @@ export default function TaskPracticePage() {
           <p className="text-center text-sm text-muted-foreground mt-4">
             还剩 {task.questionCount - completedQuestions.size} 道题目未作答
           </p>
+        )}
+
+        {/* 变式题展示面板 */}
+        {showSimilarPanel && (
+          <Card className="mt-6 border-violet-200 bg-gradient-to-br from-violet-50/50 to-white">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-violet-600" />
+                  <h3 className="font-semibold text-violet-700">举一反三 · 变式题</h3>
+                  <span className="text-xs text-violet-500 bg-violet-100 px-2 py-0.5 rounded">
+                    原题：第 {currentIndex + 1} 题
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSimilarPanel(false)}
+                >
+                  收起
+                  <ChevronUp className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+
+              {loadingSimilar ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-violet-600" />
+                  <span className="ml-2 text-sm text-muted-foreground">加载变式题...</span>
+                </div>
+              ) : similarQuestions.length === 0 ? (
+                <div className="text-center py-8">
+                  <Sparkles className="h-12 w-12 mx-auto mb-3 text-violet-300" />
+                  <p className="text-muted-foreground mb-2">暂无相关变式题</p>
+                  <p className="text-xs text-muted-foreground">
+                    请家长在「举一反三」页面为这道题生成变式题
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* 变式题选择列表 */}
+                  <div className="flex flex-wrap gap-2">
+                    {similarQuestions.map((sq, index) => (
+                      <button
+                        key={sq.id}
+                        onClick={() => setSelectedSimilarIndex(index)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                          selectedSimilarIndex === index
+                            ? 'bg-violet-600 text-white'
+                            : 'bg-violet-100 text-violet-700 hover:bg-violet-200'
+                        }`}
+                      >
+                        变式题 {index + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* 选中的变式题详情 - 学生作答模式 */}
+                  {selectedSimilarIndex !== null && similarQuestions[selectedSimilarIndex] && (
+                    (() => {
+                      const sq = similarQuestions[selectedSimilarIndex];
+                      const questions = sq.content?.questions || [];
+                      // 原始题目在任务中的索引位置
+                      const originalQuestionId = sq.originalQuestion?.id;
+                      const originalTaskIndex = task.questions.findIndex(q => q.id === originalQuestionId);
+                      const displayNumber = originalTaskIndex >= 0 ? originalTaskIndex + 1 : null;
+                      
+                      return (
+                        <div className="space-y-4 mt-4">
+                          {/* 原始题目来源提示 */}
+                          <div className="bg-violet-50 rounded-lg p-3 border border-violet-100">
+                            <p className="text-sm text-violet-700">
+                              <span className="font-medium">原题来源：</span>
+                              {displayNumber ? <>本任务第 {displayNumber} 题</> : '外部题目'}
+                            </p>
+                          </div>
+
+                          {/* 操作栏：显示答案按钮 */}
+                          <div className="flex justify-end">
+                            <Button
+                              variant={showSimilarResult ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setShowSimilarResult(!showSimilarResult)}
+                              className={`gap-1.5 text-sm ${showSimilarResult ? "bg-green-600 hover:bg-green-700" : "border-green-300 text-green-700 hover:bg-green-50"}`}
+                            >
+                              {showSimilarResult ? (
+                                <>
+                                  <EyeOff className="h-4 w-4" />
+                                  隐藏答案
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="h-4 w-4" />
+                                  查看答案
+                                </>
+                              )}
+                            </Button>
+                          </div>
+
+                          {questions.map((q: any, qIndex: number) => {
+                            const answerKey = `${sq.id}_${qIndex}`;
+                            // 从内容中尝试提取选项（如果 AI 生成了选项）
+                            const options = q.options || [];
+                            // 判断是否为选择题：有 options 字段或答案为单字母/字母组合
+                            const isChoiceType = options.length > 0 || /^[A-Z]{1,5}$/.test(String(q.answer || '').trim());
+                            const currentAnswer = similarAnswers[answerKey] || '';
+
+                            return (
+                              <div key={qIndex} className="bg-white rounded-lg border border-violet-100 p-4">
+                                <div className="flex items-start gap-3">
+                                  <span className="flex-shrink-0 w-7 h-7 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-medium">
+                                    {qIndex + 1}
+                                  </span>
+                                  <div className="flex-1 space-y-3">
+                                    {/* 变式题题目 */}
+                                    <div>
+                                      <p className="text-sm text-muted-foreground mb-1">变式题：</p>
+                                      <div
+                                        className="prose prose-sm max-w-none"
+                                        dangerouslySetInnerHTML={{
+                                          __html: typeof q.content === 'string' ? q.content : getContentText(q.content)
+                                        }}
+                                      />
+                                    </div>
+
+                                    {/* 作答区域 */}
+                                    {!showSimilarResult && (
+                                      <div className="space-y-2 mt-3 pt-3 border-t border-gray-100">
+                                        <p className="text-xs text-muted-foreground font-medium">你的答案：</p>
+                                        
+                                        {/* 有选项的选择题 */}
+                                        {isChoiceType && options.length > 0 && (
+                                          <div className="space-y-1.5">
+                                            {options.map((opt: string, oi: number) => {
+                                              const label = String.fromCharCode(65 + oi); // A, B, C, D...
+                                              const isSelected = currentAnswer.includes(label);
+                                              return (
+                                                <button
+                                                  key={oi}
+                                                  onClick={() => handleSimilarAnswer(sq.id, qIndex, label)}
+                                                  className={`w-full p-2.5 rounded-md border text-left transition-colors text-sm ${
+                                                    isSelected
+                                                      ? 'border-violet-500 bg-violet-50'
+                                                      : 'border-gray-200 hover:border-gray-300'
+                                                  }`}
+                                                >
+                                                  <span className="font-bold mr-2">{label}.</span>
+                                                  <span dangerouslySetInnerHTML={{ __html: opt }} />
+                                                </button>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+
+                                        {/* 无选项时用文本框作答 */}
+                                        {(isChoiceType && options.length === 0) || !isChoiceType ? (
+                                          <textarea
+                                            className="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none min-h-[80px] resize-none text-sm"
+                                            placeholder={
+                                              isChoiceType ? '请输入选项字母（如：A、AB）...' :
+                                              '请输入你的答案...'
+                                            }
+                                            value={currentAnswer}
+                                            onChange={(e) => handleSimilarAnswer(sq.id, qIndex, e.target.value)}
+                                          />
+                                        ) : null}
+                                      </div>
+                                    )}
+
+                                    {/* 显示答案和解析（仅查看模式下） */}
+                                    {showSimilarResult && (
+                                      <>
+                                        {/* 答案对比 */}
+                                        <div className="mt-3 pt-3 border-t border-gray-100">
+                                          <div className="bg-green-50 rounded-lg p-3 mb-2">
+                                            <p className="text-sm text-green-700 font-medium mb-1">参考答案：</p>
+                                            <div
+                                              className="text-sm text-green-800"
+                                              dangerouslySetInnerHTML={{
+                                                __html: typeof q.answer === 'string' ? q.answer : getContentText(q.answer)
+                                              }}
+                                            />
+                                          </div>
+                                          {/* 你的答案回顾 */}
+                                          {currentAnswer && (
+                                            <div className="bg-gray-50 rounded-lg p-3 mb-2">
+                                              <p className="text-sm text-gray-500 font-medium mb-1">你的答案：</p>
+                                              <p className="text-sm text-gray-800">{String(currentAnswer)}</p>
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* 解析 */}
+                                        {q.analysis && (
+                                          <div className="bg-blue-50 rounded-lg p-3 mt-2">
+                                            <p className="text-sm text-blue-700 font-medium mb-1">解题思路：</p>
+                                            <div
+                                              className="text-sm text-blue-800"
+                                              dangerouslySetInnerHTML={{
+                                                __html: typeof q.analysis === 'string' ? q.analysis : getContentText(q.analysis)
+                                              }}
+                                            />
+                                          </div>
+                                        )}
+
+                                        {/* 继续作答提示 */}
+                                        <p className="text-xs text-center text-muted-foreground mt-3">
+                                          点击"隐藏答案"可继续修改答案
+                                        </p>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
       </main>
     </div>

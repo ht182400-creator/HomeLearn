@@ -12,6 +12,8 @@ import {
   Sparkles,
   TrendingUp,
   GraduationCap,
+  XCircle,
+  Send,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SignOutButton } from './components/SignOutButton';
@@ -65,10 +67,12 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const [childrenCount, questionsCount, subjects] = await Promise.all([
+  const [childrenCount, questionsCount, subjects, wrongQuestionCount, taskCount] = await Promise.all([
     prisma.childAccount.count({ where: { userId: session.user.id } }),
     prisma.question.count({ where: { userId: session.user.id } }),
     prisma.subject.findMany({ orderBy: { order: 'asc' } }),
+    prisma.wrongQuestion.count({ where: { child: { userId: session.user.id } } }),
+    prisma.practiceTask.count({ where: { parentId: session.user.id } }),
   ]);
 
   const recentQuestions = await prisma.question.findMany({
@@ -162,13 +166,13 @@ export default async function DashboardPage() {
             delay={100}
           />
           <StatCard 
-            icon={<Target className="h-6 w-6" />}
-            gradient="from-amber-500/20 to-amber-600/5"
-            color="text-amber-600"
+            icon={<XCircle className="h-6 w-6" />}
+            gradient="from-red-500/20 to-red-600/5"
+            color="text-red-600"
             shadow="amber"
             label="错题待复习"
-            value="--"
-            href="/dashboard/review"
+            value={wrongQuestionCount}
+            href="/dashboard/wrong-questions"
             delay={200}
           />
           <StatCard 
@@ -182,6 +186,54 @@ export default async function DashboardPage() {
             delay={300}
           />
         </div>
+
+        {/* 错题库管理入口 */}
+        {wrongQuestionCount > 0 && (
+          <div className="welcome-card-3d p-6 mb-8 animate-fade-up">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/10 flex items-center justify-center icon-embossed">
+                  <XCircle className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold">错题库管理</h2>
+                  <p className="text-xs text-muted-foreground">
+                    共 <span className="font-bold text-red-600">{wrongQuestionCount}</span> 道错题待处理
+                  </p>
+                </div>
+              </div>
+              <Link href="/dashboard/wrong-questions">
+                <Button size="sm" className="bg-gradient-to-r from-red-500 to-orange-500 hover:shadow-lg hover:shadow-red-500/25 transition-all">
+                  管理错题
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* 推送记录入口 */}
+        {taskCount > 0 && (
+          <div className="welcome-card-3d p-6 mb-8 animate-fade-up">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/10 flex items-center justify-center icon-embossed">
+                  <Send className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold">推送记录</h2>
+                  <p className="text-xs text-muted-foreground">
+                    共 <span className="font-bold text-blue-600">{taskCount}</span> 条推送任务
+                  </p>
+                </div>
+              </div>
+              <Link href="/dashboard/tasks">
+                <Button size="sm" className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:shadow-lg hover:shadow-blue-500/25 transition-all">
+                  查看记录
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/db";
 import { BatchSubmitAnswerSchema } from "@/lib/validators/practice";
 import { authOptions } from "@/lib/auth";
+import { generateSimilarForQuestion } from "@/app/api/ai/similar/auto/route";
 
 // POST /api/practice/submit - 批量提交答案
 export async function POST(request: NextRequest) {
@@ -202,7 +203,7 @@ async function addToWrongBook(
     });
   } else {
     // 创建新记录
-    await prisma.wrongQuestion.create({
+    const newWrongQuestion = await prisma.wrongQuestion.create({
       data: {
         childId,
         questionId,
@@ -212,5 +213,10 @@ async function addToWrongBook(
         source: "PRACTICE",
       },
     });
+
+    // 自动触发举一反三生成（异步，不阻塞响应）
+    if (process.env.AUTO_GENERATE_SIMILAR === "true") {
+      generateSimilarForQuestion(questionId, childId, creatorId).catch(console.error);
+    }
   }
 }

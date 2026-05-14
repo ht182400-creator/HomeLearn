@@ -122,13 +122,20 @@ export default function TasksPage() {
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard/questions">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard/questions">
+                <Button variant="ghost" size="icon">
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              </Link>
+              <h1 className="text-xl font-bold">推送记录</h1>
+            </div>
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm" className="text-muted-foreground hover:text-foreground">
+                返回主页
               </Button>
             </Link>
-            <h1 className="text-xl font-bold">推送记录</h1>
           </div>
         </div>
       </header>

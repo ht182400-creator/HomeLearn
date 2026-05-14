@@ -1,16 +1,20 @@
 /**
  * AI 网关 - 多适配器模式
- * 支持 DeepSeek、通义千问、智谱GLM 自动切换
+ * 支持 DeepSeek、通义千问、智谱GLM、CodeBuddy Native 自动切换
+ * 
+ * CodeBuddy 现在使用内置实现，无需启动独立的 codebuddy2api 服务
  */
 
 import OpenAI from 'openai';
+import { CodeBuddyAdapter, createCodeBuddyAdapter } from './codebuddy';
 
 // AI 适配器接口
 interface AIAdapter {
   name: string;
   enabled: boolean;
   weight: number;
-  client: OpenAI;
+  client?: OpenAI;
+  codebuddyAdapter?: CodeBuddyAdapter;
 }
 
 // 可用模型列表
@@ -58,6 +62,7 @@ class AIGateway {
           baseURL: AI_MODELS.deepseek.baseURL,
         }),
       });
+      console.log('[AI Gateway] DeepSeek adapter initialized');
     }
 
     // 初始化通义千问 (备选1)
@@ -71,6 +76,7 @@ class AIGateway {
           baseURL: AI_MODELS.dashscope.baseURL,
         }),
       });
+      console.log('[AI Gateway] Tongyi Qianwen adapter initialized');
     }
 
     // 初始化智谱GLM (备选2)
@@ -84,6 +90,24 @@ class AIGateway {
           baseURL: AI_MODELS.zhipu.baseURL,
         }),
       });
+      console.log('[AI Gateway] Zhipu GLM adapter initialized');
+    }
+
+    // 初始化 CodeBuddy Native (内置实现，无需外部服务)
+    const codebuddyAdapter = createCodeBuddyAdapter();
+    if (codebuddyAdapter) {
+      this.adapters.set('codebuddy', {
+        name: codebuddyAdapter.getName(),
+        enabled: true,
+        weight: 4,
+        codebuddyAdapter: codebuddyAdapter,
+      });
+      console.log('[AI Gateway] CodeBuddy Native adapter initialized');
+    }
+
+    // 如果没有可用适配器，输出警告
+    if (this.adapters.size === 0) {
+      console.warn('[AI Gateway] No AI adapter available! Please configure at least one AI provider.');
     }
   }
 
@@ -110,7 +134,7 @@ class AIGateway {
   /**
    * 生成缓存键
    */
-  private getCacheKey(messages: OpenAI.Chat.ChatCompletionMessageParam[]): string {
+  private getCacheKey(messages: any[]): string {
     return JSON.stringify(messages);
   }
 
@@ -143,9 +167,16 @@ class AIGateway {
   }
 
   /**
+   * 判断是否为 CodeBuddy 适配器
+   */
+  private isCodeBuddyAdapter(adapter: AIAdapter): boolean {
+    return !!adapter.codebuddyAdapter;
+  }
+
+  /**
    * 聊天补全 (非流式)
    */
-  async chat(messages: OpenAI.Chat.ChatCompletionMessageParam[]): Promise<{
+  async chat(messages: any[]): Promise<{
     content: string;
     adapter: string;
     cached: boolean;
@@ -164,23 +195,30 @@ class AIGateway {
     }
 
     try {
-      const model = this.getModelName(adapter.name.toLowerCase().split(' ')[0]);
-      
-      const response = await adapter.client.chat.completions.create({
-        model: model,
-        messages,
-        temperature: 0.7,
-        max_tokens: 2000,
-      });
+      let content: string;
 
-      const content = response.choices[0]?.message?.content || '';
+      if (this.isCodeBuddyAdapter(adapter)) {
+        // CodeBuddy Native 适配器
+        content = await adapter.codebuddyAdapter!.chat(messages);
+      } else {
+        // OpenAI 兼容适配器
+        const model = this.getModelName([...this.adapters.entries()]
+          .find(([, a]) => a === adapter)?.[0] || '');
+        const response = await adapter.client!.chat.completions.create({
+          model: model,
+          messages,
+          temperature: 0.7,
+          max_tokens: 2000,
+        });
+        content = response.choices[0]?.message?.content || '';
+      }
 
       // 缓存结果
       this.setCache(cacheKey, content);
 
       return { content, adapter: adapter.name, cached: false };
     } catch (error) {
-      console.error(`AI adapter ${adapter.name} failed:`, error);
+      console.error(`[AI Gateway] Adapter ${adapter.name} failed:`, error);
       
       // 禁用失败的适配器
       adapter.enabled = false;
@@ -194,32 +232,38 @@ class AIGateway {
    * 聊天补全 (流式)
    */
   async *chatStream(
-    messages: OpenAI.Chat.ChatCompletionMessageParam[]
+    messages: any[]
   ): AsyncGenerator<string, void, unknown> {
     const adapter = this.selectAdapter();
     if (!adapter) {
       throw new Error('No AI adapter available');
     }
 
-    const model = this.getModelName(adapter.name.toLowerCase().split(' ')[0]);
-
     try {
-      const stream = await adapter.client.chat.completions.create({
-        model: model,
-        messages,
-        temperature: 0.7,
-        max_tokens: 2000,
-        stream: true,
-      });
+      if (this.isCodeBuddyAdapter(adapter)) {
+        // CodeBuddy Native 适配器 (流式)
+        yield* adapter.codebuddyAdapter!.chatStream(messages);
+      } else {
+        // OpenAI 兼容适配器 (流式)
+        const model = this.getModelName([...this.adapters.entries()]
+          .find(([, a]) => a === adapter)?.[0] || '');
+        const stream = await adapter.client!.chat.completions.create({
+          model: model,
+          messages,
+          temperature: 0.7,
+          max_tokens: 2000,
+          stream: true,
+        });
 
-      for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || '';
-        if (content) {
-          yield content;
+        for await (const chunk of stream) {
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) {
+            yield content;
+          }
         }
       }
     } catch (error) {
-      console.error(`AI stream adapter ${adapter.name} failed:`, error);
+      console.error(`[AI Gateway] Stream adapter ${adapter.name} failed:`, error);
       adapter.enabled = false;
       yield* this.chatStream(messages);
     }

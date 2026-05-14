@@ -147,6 +147,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // 自动将题目添加到错题本（如果尚未存在）
+    for (const questionId of questionIds) {
+      const existing = await prisma.wrongQuestion.findFirst({
+        where: { childId, questionId, mastered: false },
+      });
+      if (!existing) {
+        await prisma.wrongQuestion.create({
+          data: {
+            childId,
+            questionId,
+            wrongAnswer: { source: "TASK_PUSH", pushedAt: new Date() },
+            attempts: 0,
+            source: "MANUAL",
+          },
+        });
+      }
+    }
+
     // 发送站内通知给孩子
     await prisma.notification.create({
       data: {

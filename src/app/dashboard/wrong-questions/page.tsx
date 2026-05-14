@@ -33,6 +33,9 @@ import {
   XCircle,
   Clock,
   Filter,
+  Sparkles,
+  Check,
+  Square,
 } from "lucide-react";
 
 interface Child {
@@ -87,6 +90,10 @@ export default function WrongQuestionsManagementPage() {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null);
   const [pushing, setPushing] = useState(false);
+  const [selectedForSimilar, setSelectedForSimilar] = useState<Set<string>>(new Set());
+  const [generatingSimilar, setGeneratingSimilar] = useState(false);
+  // 批量生成进度追踪
+  const [similarProgress, setSimilarProgress] = useState({ current: 0, total: 0 });
 
   // 加载孩子列表
   useEffect(() => {
@@ -189,6 +196,128 @@ export default function WrongQuestionsManagementPage() {
       showToast("推送失败，请重试", "error");
     } finally {
       setPushing(false);
+    }
+  };
+
+  /**
+   * 批量生成变式题（带进度反馈）
+   */
+  const handleBatchGenerateSimilar = async () => {
+    if (selectedForSimilar.size === 0) {
+      showToast("请先选择要生成变式题的错题", "error");
+      return;
+    }
+
+    if (!selectedChildId) {
+      showToast("请先选择孩子账户", "error");
+      return;
+    }
+
+    setGeneratingSimilar(true);
+    const total = selectedForSimilar.size;
+    setSimilarProgress({ current: 0, total });
+    try {
+      // 使用 EventSource 或轮询获取进度
+      const res = await fetch("/api/ai/similar/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionIds: Array.from(selectedForSimilar),
+          childId: selectedChildId,
+        }),
+      });
+
+      // 模拟进度更新（实际 API 是同步的，但生成过程耗时较长）
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress = Math.min(progress + 1, total - 1);
+        setSimilarProgress(prev => ({ ...prev, current: progress + 1 }));
+      }, 3000); // 每3秒模拟一道题完成
+
+      const data = await res.json();
+      clearInterval(progressInterval);
+      setSimilarProgress({ current: total, total });
+
+      if (data.success) {
+        const successCount = data.data?.success || 0;
+        const failCount = data.data?.failed || 0;
+        if (failCount > 0) {
+          showToast(`成功 ${successCount} 道，失败 ${failCount} 道`, "warning");
+        } else {
+          showToast(`成功提交 ${successCount} 道题的变式题生成任务！`, "success");
+        }
+        setSelectedForSimilar(new Set());
+      } else {
+        showToast(data.error || "生成失败", "error");
+      }
+    } catch (error) {
+      console.error("批量生成变式题失败:", error);
+      showToast("批量生成失败，请重试", "error");
+    } finally {
+      setTimeout(() => {
+        setGeneratingSimilar(false);
+        setSimilarProgress({ current: 0, total: 0 });
+      }, 1500); // 延迟重置，让用户看到完成状态
+    }
+  };
+
+  /**
+   * 单题生成变式题
+   */
+  const handleGenerateSimilar = async (questionId: string) => {
+    if (!selectedChildId) {
+      showToast("请先选择孩子账户", "error");
+      return;
+    }
+
+    setGeneratingSimilar(true);
+    try {
+      const res = await fetch("/api/ai/similar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionId,
+          childId: selectedChildId,
+          count: 3,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(`成功生成 ${data.questions?.length || 0} 道变式题！`, "success");
+      } else {
+        showToast(data.error || "生成失败", "error");
+      }
+    } catch (error) {
+      console.error("生成变式题失败:", error);
+      showToast("生成失败，请重试", "error");
+    } finally {
+      setGeneratingSimilar(false);
+    }
+  };
+
+  /**
+   * 切换变式题选择
+   */
+  const toggleSimilarSelect = (questionId: string) => {
+    const newSet = new Set(selectedForSimilar);
+    if (newSet.has(questionId)) {
+      newSet.delete(questionId);
+    } else {
+      newSet.add(questionId);
+    }
+    setSelectedForSimilar(newSet);
+  };
+
+  /**
+   * 全选/取消全选（未掌握的题目）
+   */
+  const toggleSelectAllUnmastered = () => {
+    const unmasteredIds = questions.filter((q) => !q.mastered).map((q) => q.question.id);
+    if (selectedForSimilar.size === unmasteredIds.length) {
+      setSelectedForSimilar(new Set());
+    } else {
+      setSelectedForSimilar(new Set(unmasteredIds));
     }
   };
 
@@ -363,6 +492,54 @@ export default function WrongQuestionsManagementPage() {
                 推送易错题
               </Button>
             )}
+
+            {/* 举一反三相关操作 */}
+            <div className="flex items-center gap-2 ml-auto">
+              {selectedForSimilar.size > 0 && (
+                <Button
+                  onClick={handleBatchGenerateSimilar}
+                  disabled={generatingSimilar}
+                  className="gap-2 bg-purple-600 hover:bg-purple-700 relative overflow-hidden"
+                >
+                  {generatingSimilar ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      生成中 ({similarProgress.current}/{similarProgress.total})
+                      {/* 进度条 */}
+                      <div
+                        className="absolute bottom-0 left-0 h-1 bg-white/30 transition-all duration-500"
+                        style={{ width: `${(similarProgress.current / similarProgress.total) * 100}%` }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      生成 {selectedForSimilar.size} 道变式题
+                    </>
+                  )}
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={toggleSelectAllUnmastered}
+                className="gap-2"
+              >
+                {selectedForSimilar.size === questions.filter((q) => !q.mastered).length ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Square className="h-4 w-4" />
+                )}
+                全选错题
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push("/dashboard/similar-questions")}
+                className="gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                查看变式题
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -400,6 +577,22 @@ export default function WrongQuestionsManagementPage() {
             >
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
+                  {/* 选择框（仅未掌握的题目） */}
+                  {!wq.mastered && (
+                    <button
+                      onClick={() => toggleSimilarSelect(wq.question.id)}
+                      className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                        selectedForSimilar.has(wq.question.id)
+                          ? "bg-purple-600 border-purple-600"
+                          : "border-gray-300 hover:border-purple-400"
+                      }`}
+                    >
+                      {selectedForSimilar.has(wq.question.id) && (
+                        <Check className="h-4 w-4 text-white" />
+                      )}
+                    </button>
+                  )}
+
                   {/* 左侧：内容区域 */}
                   <div className="flex-1 min-w-0">
                     {/* 标签行 */}
@@ -460,16 +653,28 @@ export default function WrongQuestionsManagementPage() {
                       <Eye className="h-5 w-5 text-blue-500" />
                     </Button>
                     {!wq.mastered && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handlePushToStudent(wq.question.id)}
-                        disabled={pushing}
-                        className="h-10 w-10"
-                        title="推送这道题复习"
-                      >
-                        <Send className="h-5 w-5 text-green-500" />
-                      </Button>
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleGenerateSimilar(wq.question.id)}
+                          disabled={generatingSimilar}
+                          className="h-10 w-10"
+                          title="生成举一反三变式题"
+                        >
+                          <Sparkles className="h-5 w-5 text-purple-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handlePushToStudent(wq.question.id)}
+                          disabled={pushing}
+                          className="h-10 w-10"
+                          title="推送这道题复习"
+                        >
+                          <Send className="h-5 w-5 text-green-500" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -623,19 +828,32 @@ export default function WrongQuestionsManagementPage() {
             </div>
 
             {/* 弹窗底部 */}
-            <div className="p-4 border-t bg-gray-50 flex justify-between">
+            <div className="p-4 border-t bg-gray-50 flex justify-between gap-2">
               {!viewingQuestion.mastered && (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    handlePushToStudent(viewingQuestion.question.id);
-                    setViewingQuestion(null);
-                  }}
-                  disabled={pushing}
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  推送这道题复习
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      handlePushToStudent(viewingQuestion.question.id);
+                      setViewingQuestion(null);
+                    }}
+                    disabled={pushing}
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    推送复习
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      handleGenerateSimilar(viewingQuestion.question.id);
+                      setViewingQuestion(null);
+                    }}
+                    disabled={generatingSimilar}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {generatingSimilar ? "生成中..." : "生成变式题"}
+                  </Button>
+                </div>
               )}
               <Button variant="outline" onClick={() => setViewingQuestion(null)}>
                 关闭
